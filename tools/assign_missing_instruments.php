@@ -35,32 +35,35 @@ $client->initialize();
 $DB =& Database::singleton();
 $query="SELECT ID, subprojectID from session";
 if(!empty($argv[1]) && $argv[1]!="confirm"){
-	$query.=" WHERE visit_label='$argv[1]'";
-} else {
-    $visit_labels = $DB->pselect("SELECT DISTINCT Visit_label FROM session WHERE Active='Y' AND Visit_label NOT LIKE '%phantom%' AND Visit_label NOT LIKE 'Vsup%'", array());
+	$query.=" WHERE visit_label='$argv[1]' AND Active='Y' AND Cancelled='N'";
+    $visit_label = $argv[1];
 }
+$DB->select($query, $results);
+foreach($results AS $result){
+		// create a new battery object && new battery
+        $battery =& new NDB_BVL_Battery;
 
-function PopulateVisitLabel($result, $visit_label) {
-    global $argv;
-    // create a new battery object && new battery
-    $battery =& new NDB_BVL_Battery;
-
-    // select a specific time point (sessionID) for the battery
-    $battery->selectBattery($result['ID']);
-    $timePoint =& TimePoint::singleton($result['ID']);
-
-    //To assign missing instruments to all sessions, sent to DCC or not.
-    $defined_battery=$battery->lookupBattery($battery->age, $result['subprojectID'], $timePoint->getCurrentStage(), $visit_label, $timePoint->getCenterID());
-    $actual_battery=$battery->getBattery($timePoint->getCurrentStage(), $result['subprojectID']);
-
-    $diff=array_diff($defined_battery, $actual_battery);
-    if(!empty($diff)){
-        echo "\n CandID: ".$timePoint->getCandID()."  Visit Label:  ".$timePoint->getVisitLabel()."\nMissing Instruments:\n";
-        print_r($diff);
-    }
-    if($argv[1]=="confirm" || $argv[2]=="confirm"){
-        foreach($diff AS $test_name){
-            $battery->addInstrument($test_name);
+        // select a specific time point (sessionID) for the battery
+        $battery->selectBattery($result['ID']);
+        $timePoint =& TimePoint::singleton($result['ID']);
+        
+        //To assign missing instruments to all sessions, sent to DCC or not.
+        $defined_battery=$battery->lookupBattery($battery->age, $result['subprojectID'], $timePoint->getCurrentStage(), $visit_label );
+        $actual_battery=$battery->getBattery($timePoint->getCurrentStage(), $result['subprojectID'], $visit_label);
+        
+      //To assign missing instruments only for sessions in the Visit stage...
+//        $defined_battery=$battery->lookupBattery($battery->age, $result['subprojectID'], 'Visit');
+//        $actual_battery=$battery->getBattery('Visit');
+        
+        $diff=array_diff($defined_battery, $actual_battery);
+        if(!empty($diff)){
+	        echo "\n CandID: ".$timePoint->getCandID()."  Visit Label:  ".$timePoint->getVisitLabel()."\nMissing Instruments:\n";
+	        print_r($diff);
+        }
+        if($argv[1]=="confirm" || $argv[2]=="confirm"){
+	        foreach($diff AS $test_name){
+	        	$battery->addInstrument($test_name);
+	        }
         }
     }
 
