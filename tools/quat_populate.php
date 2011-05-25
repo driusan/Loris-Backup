@@ -60,6 +60,41 @@ if(PEAR::isError($result)) {
 // get a list of all parameter types that we're populating
 $query = "SELECT p.ParameterTypeID, p.Name, p.Type, p.SourceField, p.SourceFrom, p.SourceCondition, p.CurrentGUITable FROM parameter_type_running p JOIN parameter_type_category_rel USING (ParameterTypeID) JOIN parameter_type_category USING (ParameterTypeCategoryID) WHERE Queryable=1";
 $parameterTypes = array();
+$db->select($query, $parameterTypes);
+
+// loop over the parameter types to build the data query tables
+$createSQL = "";
+$columnCount = 0;
+$nextTableName = $quatTableBasename . $quatTableCounter;
+$countParameterTypes = count($parameterTypes);
+
+
+for($idx=0; $idx<$countParameterTypes; $idx++) {
+    $parameterType =& $parameterTypes[$idx];
+
+    // add column to the create table statement
+    $createSQL .= !empty($createSQL) ? ', ' : '';
+    $createSQL .= "`$parameterType[Name]` $parameterType[Type]";
+    $parameterTypes[$idx]['CurrentGUITable'] = $nextTableName;
+    $db->update('parameter_type', array('CurrentGUITable'=>$nextTableName), array('ParameterTypeID'=>$parameterType['ParameterTypeID']));
+    $columnCount++;
+
+    // if the number of columns is now greater than the threshhold
+    if($columnCount >= $columnThreshhold or $idx+1 == $countParameterTypes) {
+
+        // run the create table statement
+        $createSQL = "CREATE TABLE $nextTableName (SessionID int not null primary key, $createSQL)";
+        $insertSQL = "INSERT INTO $nextTableName (SessionID) SELECT DISTINCT SessionID FROM flag f JOIN parameter_type pt ON (f.Test_name=pt.SourceFrom) WHERE pt.CurrentGUITable='$nextTableName'";
+        $quatTableCounter++;
+        $nextTableName = $quatTableBasename . $quatTableCounter;
+        $result = $db->run($createSQL);
+        if($db->isError($result)) {
+            die( "Failed to create table $nextTableName: ".$result->getMessage()."\n" );
+        }
+        $result = $db->run($insertSQL);
+        if($db->isError($result)) {
+            die( "Failed to populate table $nextTableName: ".$result->getMessage()."\n" );
+        }
 
 // Parse command line options
 $options = getopt("m", array("metavars","sourcefrom:", "fields:", "help"));
@@ -75,20 +110,11 @@ if(isset($options['help'])) {
 if(isset($options['m']) || isset($options['metavars'])) {
     $query .= " AND parameter_type_category.type='Metavars'";
 }
-if(isset($options['fields'])) {
-    $fields = explode(",", $options['fields']);
-    $q_fields = array();
-    foreach($fields as $field) {
-        $q_fields[] = $db->quote($field);
-    }
-   
-    $query .= " AND p.SourceField IN (";
-    $query .= implode(",", $q_fields);
-    $query .= ")";
-}
-$query .= " ORDER BY CurrentGUITable, SourceFrom";
-print "$query\n";
-$db->select($query, $parameterTypes);
+$sessions = array();
+$db->select($query, $sessions);
+
+unset($config);
+print "At make the data table: " . memory_get_usage() . "\n";
 
 function GetSelectStatement($parameterType, $field=NULL) {
     // construct query string dependant on parameter source
