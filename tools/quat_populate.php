@@ -211,30 +211,20 @@ $date = sprintf("%04d-%02d-%02d", $today['year'], $today['mon'], $today['mday'])
 // Update data
 foreach($parameterTypes AS $parameterType) {
     if($parameterType['CurrentGUITable'] != null) {
-        print "Updating $parameterType[Name], memory: " . memory_get_usage() . " bytes\n";
-        if(($lastGUITable !== $parameterType['CurrentGUITable'] || $lastSourceFrom !== $parameterType['SourceFrom']) && (isset($lastGUITable) && isset($lastSourceFrom))) {
-            $updateStmt = "UPDATE $lastGUITable" . "_running SET " . join(", ", $setVals);
-            $setVals = array();
-            $log->addLog($updateStmt);
-            //print "$updateStmt\n";
-
-            $db->run($updateStmt);
-            
-        }
-        switch($parameterType['SourceFrom']) {
-            case 'session':
-            case 'candidate':
-            case 'psc':
-            case 'parameter_candidate';
-            case 'parameter_session':
-                $setVals[] = "`$parameterType[Name]`=(" . GetSelectStatement($parameterType) . " AND $parameterType[CurrentGUITable]_running.SessionID=s.ID)";
-                break;
-            default:
-                $setVals[] = "`$parameterType[Name]`=(" . GetSelectStatement($parameterType) . " AND $parameterType[CurrentGUITable]_running.SessionID=s.ID AND flag.CommentID NOT LIKE 'DDE%')";
-                break;
-        }
-        $lastGUITable= $parameterType['CurrentGUITable'];
-        $lastSourceFrom= $parameterType['SourceFrom'];
+    print "Updating $parameterType[Name], memory: " . memory_get_usage() . " bytes\n";
+    switch($parameterType['SourceFrom']) {
+        case 'session':
+        case 'candidate':
+            print "UPDATE $parameterType[CurrentGUITable] SET $parameterType[Name]=(" . GetSelectStatement($parameterType) . " AND $parameterType[CurrentGUITable].SessionID=s.ID)  WHERE $parameterType[CurrentGUITable].SessionID=(" . GetSelectStatement($parameterType, "DISTINCT s.ID"). " AND s.ID=$parameterType[CurrentGUITable].SessionID)";
+            $db->run("UPDATE $parameterType[CurrentGUITable] SET $parameterType[Name]=(" . GetSelectStatement($parameterType) . " AND $parameterType[CurrentGUITable].SessionID=s.ID)  WHERE $parameterType[CurrentGUITable].SessionID=(" . GetSelectStatement($parameterType, "DISTINCT s.ID"). " AND s.ID=$parameterType[CurrentGUITable].SessionID)");
+            //exit(-1);
+            break;
+        default:
+            print "UPDATE $parameterType[CurrentGUITable] SET $parameterType[Name]=(" . GetSelectStatement($parameterType) . " AND $parameterType[CurrentGUITable].SessionID=s.ID AND flag.CommentID NOT LIKE 'DDE%') WHERE $parameterType[CurrentGUITable].SessionID=(" . GetSelectStatement($parameterType, "DISTINCT s.ID"). " AND flag.CommentID NOT LIKE 'DDE%' AND s.ID=$parameterType[CurrentGUITable].SessionID)";
+            $db->run("UPDATE $parameterType[CurrentGUITable] SET $parameterType[Name]=(" . GetSelectStatement($parameterType) . " AND $parameterType[CurrentGUITable].SessionID=s.ID AND flag.CommentID NOT LIKE 'DDE%') WHERE $parameterType[CurrentGUITable].SessionID=(" . GetSelectStatement($parameterType, "DISTINCT s.ID"). " AND flag.CommentID NOT LIKE 'DDE%' AND s.ID=$parameterType[CurrentGUITable].SessionID)");
+            break;
+    }
+    //$db->run("UPDATE $parameterType[CurrentGUITable] SET $parameterType[Name]=(" . GetSelectStatement($parameterType) . " WHERE $parameterType[CurrentGUITable].SessionID=s.ID)");
     }
 }
 // Once more, for good measure. (and because the if statement above wouldn't be executed
