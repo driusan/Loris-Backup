@@ -294,8 +294,12 @@ switch($_REQUEST['mode']) {
          SendFilesToPackage($querySegments['selected_fields'], $query);
      }
 
+     $toCBrain = $_POST['cbrain'];
+     if($toCBrain === 'execute') {
+        SendFilesToCBrain($querySegments['selected_fields'], $query); //$selectedTables, empty($where) ? 1 : $where);
+     }
      $script .= "window.open('query_gui_data_download.php?queryID=$queryID&format=$_REQUEST[outputFormat]', 'query_download_window');";
-     
+
      $remoteLoaderFunction="doNothing";
      break;
        
@@ -345,6 +349,17 @@ function SendFilesToPackage($cols, $query) {
         "filename" => $user->getUsername() . ".$timestamp.tar.gz"
     ));
 }
+
+function SendFilesToCBrain($cols, $query) {
+    $DB = Database::singleton();
+    $timestamp = time();
+    $filelist = getFiles($cols,$query,$timestamp, "cbrain");
+    chdir("../tools");
+    $cmd = sprintf("cat $filelist | ./%s > %s 2>&1 & echo $! >> %s", "copy_to_cbrain.pl", "../logs/cbrain." . $timestamp, $filelist);
+    print "$cmd\n";
+    exec($cmd);
+}
+
 function printArray($array, $indent=""){
     while(list($key,$val)=each($array)){
         if(is_array($val)){
@@ -482,6 +497,7 @@ fieldOrderList = []; // new Array;
 <input type='text' id='mode' name='mode'>
 <input type='text' id='download' name='download' />
 <input type='text' id='outputFormat' name='outputFormat'>
+<input type='text' id='cbrain' name='cbrain' />
 <input type='submit'>
 </form>
 </body>
