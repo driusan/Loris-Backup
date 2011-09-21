@@ -20,36 +20,75 @@ if(!defined($loris_user)) {
     exit(-1);
 }
 
+
+# Group prepared statements together and throw in some helper functions to execute them
+# This is the only interaction we have directly with the DB
+BEGIN {
+    my $dbh = DBI->connect("DBI:mysql:database=loris;host=localhost;port=3306", "root", "abc123!");
+    my $configsth= $dbh->prepare("SELECT c.Value FROM ConfigSettings cs LEFT JOIN Config c ON (c.ConfigID=cs.ID) WHERE cs.Name=?");
+    my $useridsth = $dbh->prepare("SELECT ID FROM users WHERE UserId=? LIMIT 1");
+    my $newtasksth = $dbh->prepare("INSERT INTO CBrainTasks (UserID, Timestamp, CBrainHost, TaskID, Status) VALUES (?, ?, ?, ?, ?)");
+    sub _GetSingleVal {
+        my $sth = shift;
+        my $param = shift;
+        $sth->execute($param);
+        my @results = $sth->fetchrow_array;
+        return $results[0];
+    }
+    sub GetConfigOption {
+        my $name = shift;
+        return _GetSingleVal($configsth, $name);
+    }
+    sub GetUserID { 
+        my $name = shift;
+        return _GetSingleVal($useridsth, $name);
+    }
+
+    sub InsertNewTask {
+        my $UserID = shift;
+        my $timestamp = shift;
+        my $cbrainhost = shift;
+        my $TaskID = shift;
+        $newtasksth->execute($UserID, $timestamp, $cbrainhost, $TaskID, 'Unknown');
+    }
+    sub DisconnectDBH {
+        $configsth->finish;
+        $useridsth->finish;
+        $newtasksth->finish;
+
+        $dbh->disconnect();
+    }
+}
+
 # Magic values that Pierre asked me to use
 # They should be un-hardcoded once the API
 # allows it.
-my $ProviderID = 136;
-my $ToolConfigID = 7;
-my $ToolConfigID = 76;
-my $cbrainhost = 'http://bianca.cbrain.mcgill.ca:3000/';
+my $ProviderID = GetConfigOption("CBrainProviderID");
+my $ToolConfigID = GetConfigOption("CBrainToolConfigID");
+my $cbrainhost = GetConfigOption("CBrainHost");
+
 my $civetprefix = "ibis_civet";
 
 # Username/password to login to cbrain with.
 # This should be converted into commandline
 # options. The password should be a 
 # hash once CBrain API allows it.
-my $UserName = "loris";
-my $Password = "qwer";
+my $UserName = GetConfigOption("CBrainUsername");
+my $Password = GetConfigOption("CBrainPassword");
 
-my $dbh = DBI->connect("DBI:mysql:database=loris;host=localhost;port=3306", "root", "abc123!");
-
-my $sth = $dbh->prepare("SELECT ID FROM users Where UserID=? LIMIT 1");
-$sth->execute($loris_user);
-my @results = $sth->fetchrow_array;
-$sth->finish;
-my $UserID = $results[0];
+my $UserID = GetUserID($loris_user);
+print "ProviderID: $ProviderID\n";
+print "ToolConfigID: $ToolConfigID\n";
+print "cbrainhost: $cbrainhost\n";
+print "UserName: $UserName\n";
+print "Password: $Password\n";
+print "\n"
 if(!$UserID) {
     print "Loris User does not exist\n";
     exit(-1);
 }
-print "$loris_user : $UserID\n";
+print "$loris_user : $UserID\n\n";
 
-#$configh->execute([3]);
 my $timestamp = time();
 my %subject_map = ();
 
@@ -57,10 +96,7 @@ system("ssh -n ibis\@pinch.bic.mni.mcgill.ca \"mkdir /data/ibis/data/cbrain/$tim
 while(my $line = <>) {
     chomp($line);
     print "$line\n";
-    my @pieces = split(/_/, $line);
     my @paths = split('/', $line);
-    print "$pieces[1] $paths[$#paths]\n";
-    #$subject_map{$paths[$#paths]} = $pieces[1];
     $subject_map{$paths[$#paths]} = $paths[$#paths];
     system("ssh -n ibis\@pinch.bic.mni.mcgill.ca \"ln $line /data/ibis/data/cbrain/$timestamp/\"");
 }
@@ -77,11 +113,10 @@ my $TaskIDs = $agent->create_civet_task_for_collection($ToolConfigID, "CIVET run
 });
 print $agent->error_message();
 print "Looping through @$TaskIDs\n";
-my $sth = $dbh->prepare("INSERT INTO CBrainTasks (UserID, Timestamp, CBrainHost, TaskID, Status) VALUES (?, ?, ?, ?, ?)");
 foreach my $TaskID (@$TaskIDs) {
     print "TaskID: $TaskID\n";
-    $sth->execute($UserID, $timestamp, $cbrainhost, $TaskID, 'Unknown');
+    InsertNewTask($UserID, $timestamp, $cbrainhost, $TaskID, 'Unknown');
 }
 
 
-$dbh->disconnect();
+DisconnectDBH();
