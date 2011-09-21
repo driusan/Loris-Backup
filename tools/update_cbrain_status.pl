@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+# Dave MacFarlane 2011
+# david.macfarlane2@mcgill.ca
+# Poll CBrain server to update the status of tasks in CBrainTasks table
+# TODO: - Unhardcode $dbh parameters (use -profile?)
+#       - Use CBrainHost from CBrainTasks for that particular task
+#       - Execute script to process completed files instead of just marking as Completed in DB?
 
 require CbrainAPI;
 use strict;
