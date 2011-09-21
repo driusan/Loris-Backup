@@ -1,4 +1,13 @@
 #!/usr/bin/perl
+# Dave MacFarlane 2011
+# david.macfarlane2@mcgill.ca
+# Script to send minc files to a CBrain server using CBrain API, 
+# launch a CIVET task, and store the CBrain TaskID in the Loris database
+# Takes list of files from STDIN
+# Requires public keys to be setup for the user executing it to pinch
+# TODO: - Loris DB username/password need to be unhardcoded (use -profile?)
+#   - remote file copying should to be done more efficiently, instead of one ssh execution per file (+1 for the mkdir)
+#   - remote server should be config option. As should remote and local path of minc file, username, and remote directory
 
 require CbrainAPI;
 use strict;
