@@ -10,8 +10,8 @@
 #   - remote server should be config option. As should remote and local path of minc file, username, and remote directory
 
 require CbrainAPI;
+use NeuroDB::DBI;
 use strict;
-use DBI;
 use Getopt::Tabular;
 
 my $profile;
@@ -24,16 +24,28 @@ my @arg_table =
 );
 
 my $result = GetOptions(\@arg_table, \@ARGV);
+if(!defined($profile)) {
+    print "profile is required\n";
+    exit(-1);
+} 
 if(!defined($loris_user)) {
     print "Lorisuser parameter is required\n";
     exit(-1);
 }
 
 
+# input option error checking
+
 # Group prepared statements together and throw in some helper functions to execute them
 # This is the only interaction we have directly with the DB
-BEGIN {
-    my $dbh = DBI->connect("DBI:mysql:database=loris;host=localhost;port=3306", "root", "abc123!");
+{
+    { package Settings; do "$ENV{HOME}/.neurodb/$profile" }
+    if (!defined(@Settings::db)) { 
+        print "\n\tERROR: You don't have a configuration file named '$profile' in:  $ENV{HOME}/.neurodb/ \n\n"; 
+        exit(33); 
+    } 
+
+    my $dbh = &NeuroDB::DBI::connect_to_db(@Settings::db);
     my $configsth= $dbh->prepare("SELECT c.Value FROM ConfigSettings cs LEFT JOIN Config c ON (c.ConfigID=cs.ID) WHERE cs.Name=?");
     my $useridsth = $dbh->prepare("SELECT ID FROM users WHERE UserId=? LIMIT 1");
     my $newtasksth = $dbh->prepare("INSERT INTO CBrainTasks (UserID, Timestamp, CBrainHost, TaskID, Status) VALUES (?, ?, ?, ?, ?)");
@@ -76,7 +88,7 @@ my $ProviderID = GetConfigOption("CBrainProviderID");
 my $ToolConfigID = GetConfigOption("CBrainToolConfigID");
 my $cbrainhost = GetConfigOption("CBrainHost");
 
-my $civetprefix = "ibis_civet";
+my $civetprefix = "civet";
 
 # Username/password to login to cbrain with.
 # This should be converted into commandline
@@ -91,7 +103,7 @@ print "ToolConfigID: $ToolConfigID\n";
 print "cbrainhost: $cbrainhost\n";
 print "UserName: $UserName\n";
 print "Password: $Password\n";
-print "\n"
+print "\n";
 if(!$UserID) {
     print "Loris User does not exist\n";
     exit(-1);
@@ -101,6 +113,9 @@ print "$loris_user : $UserID\n\n";
 my $timestamp = time();
 my %subject_map = ();
 
+# Would be more efficient to do something like:
+# ssh pinch 'cd /data/ibis/data/cbrain/;mkdir 1316622635; for file in `cat filelists/cbrain.1316622635.txt`; do ln $file /data/ibis/data/cbrain/1316622635/; done'
+# with appropriate config options for directories, hosts, usernames, and not using ssh if not remote
 system("ssh -n ibis\@pinch.bic.mni.mcgill.ca \"mkdir /data/ibis/data/cbrain/$timestamp\"");
 while(my $line = <>) {
     chomp($line);
