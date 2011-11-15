@@ -67,6 +67,7 @@ if(!defined($profile)) {
     sub CompleteTask {
         my $TaskID = shift;
         $compsth->execute($TaskID);
+        `perl ./process_completed_civet_task.pl -profile $profile $TaskID`;
     }
     sub DisconnectDBH {
         $configsth->finish;
@@ -75,7 +76,7 @@ if(!defined($profile)) {
         $compsth->finish;
         $incsth->finish;
         
-        $dbh->disconnect();
+        $dbh->disconnect;
     }
 }
 
