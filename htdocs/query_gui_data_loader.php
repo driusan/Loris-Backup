@@ -354,9 +354,7 @@ function SendFilesToCBrain($cols, $query) {
     $DB = Database::singleton();
     $timestamp = time();
     $filelist = getFiles($cols,$query,$timestamp, "cbrain");
-    chdir("../tools");
-    $cmd = sprintf("cat $filelist | ./%s > %s 2>&1 & echo $! >> %s", "copy_to_cbrain.pl", "../logs/cbrain." . $timestamp, $filelist);
-    print "$cmd\n";
+    $cmd = sprintf("cat /tmp/cbrain.$timestamp.txt | %s -lorisuser %s -profile prod > %s 2>&1 & echo $! >> %s\n", "perl -I../tools ../tools/copy_to_cbrain.pl", $user->getUsername(), "../logs/cbrain." . $timestamp, "/tmp/cbrain." . $timestamp);
     exec($cmd);
 }
 
