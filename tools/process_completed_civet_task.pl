@@ -4,10 +4,9 @@
 # Take the TaskID of a completed CBrain (CIVET) task, process the files, and insert
 # them into the MRI browser
 # TODO - Determine if "native" coordinate space is ever used, and pass appropriately to InsertScan
-#   - Copy files to appropriate subdirectory on pinch
+#   - Copy files to appropriate subdirectory on pinch after completion (assembly?) or 
 #   - Use full path of FileName in insert statement (of copied file)
 #   - Determine appropriate AcquisitionProtocolID for all file types
-#   - Error checking/don't insert if parameter not passed
 #   - Ensure proper FileType for non-mnc/obj/xfm
 #   - Keep a log somewhere
 #   - Produce mincpic and jiv
@@ -134,25 +133,26 @@ if(!defined($profile)) {
 }
 my $FileHost = GetConfigOption("FilesHost");
 my $RemoteUser = GetConfigOption("FilesUserName");
+my $FilesPath= GetConfigOption("CBrainFilePath");
 
 sub GetFiles {
     my $type = shift;
     my $directory = shift;
     my @files = undef;
     if($type =~ m/^classify$/) {
-        @files = `ssh -n $RemoteUser\@$FileHost \"ls /data/ibis/data/cbrain/$directory/classify/*pve_csf.mnc /data/ibis/data/cbrain/$directory/classify/*pve_gm.mnc /data/ibis/data/cbrain/$directory/classify/*pve_wm.mnc /data/ibis/data/cbrain/$directory/classify/*cls_clean.mnc\"`;
+        @files = `ssh -n $RemoteUser\@$FileHost \"ls $FilesPath/$directory/classify/*pve_csf.mnc $FilesPath/$directory/classify/*pve_gm.mnc $FilesPath/$directory/classify/*pve_wm.mnc $FilesPath/$directory/classify/*cls_clean.mnc\"`;
     } elsif($type =~ m/^native$/) {
-        @files = `ssh -n $RemoteUser\@$FileHost \"ls /data/ibis/data/cbrain/$directory/native/*.mnc\"`;
+        @files = `ssh -n $RemoteUser\@$FileHost \"ls $FilesPath/$directory/native/*.mnc\"`;
     } elsif($type =~ m/^surfaces$/) {
-        @files = `ssh -n $RemoteUser\@$FileHost \"ls /data/ibis/data/cbrain/$directory/surfaces/*gray_surface*.obj /data/ibis/data/cbrain/$directory/surfaces/*tlink_20mm*.dat /data/ibis/data/cbrain/$directory/surfaces/*mid_surface*_81920.obj /data/ibis/data/cbrain/$directory/surfaces/*white_surface*_calibrated_81920.obj\"`;
+        @files = `ssh -n $RemoteUser\@$FileHost \"ls $FilesPath/$directory/surfaces/*gray_surface*.obj $FilesPath/$directory/surfaces/*tlink_20mm*.dat $FilesPath/$directory/surfaces/*mid_surface*_81920.obj $FilesPath/$directory/surfaces/*white_surface*_calibrated_81920.obj\"`;
     } elsif($type =~ m/^thickness$/) {
-        @files = `ssh -n $RemoteUser\@$FileHost \"ls /data/ibis/data/cbrain/$directory/thickness/*cerebral_volume.dat /data/ibis/data/cbrain/$directory/thickness/*native_rms_rsl_tlink_20mm_*.txt\"`;
+        @files = `ssh -n $RemoteUser\@$FileHost \"ls $FilesPath/$directory/thickness/*cerebral_volume.dat $FilesPath/$directory/thickness/*native_rms_rsl_tlink_20mm_*.txt\"`;
     } elsif($type =~ m/^transforms_linear$/) {
-        @files = `ssh -n $RemoteUser\@$FileHost \"ls /data/ibis/data/cbrain/$directory/transforms/linear/*_t1_tal.xfm\"`;
+        @files = `ssh -n $RemoteUser\@$FileHost \"ls $FilesPath/$directory/transforms/linear/*_t1_tal.xfm\"`;
     } elsif($type =~ m/^transforms_nonlinear$/) {
-        @files = `ssh -n $RemoteUser\@$FileHost \"ls /data/ibis/data/cbrain/$directory/transforms/nonlinear/*_nlfit_It.xfm\"`;
+        @files = `ssh -n $RemoteUser\@$FileHost \"ls $FilesPath/$directory/transforms/nonlinear/*_nlfit_It.xfm\"`;
     } elsif($type =~ m/^mask$/) {
-        @files = `ssh -n $RemoteUser\@$FileHost \"ls /data/ibis/data/cbrain/$directory/mask/*.mnc\"`;
+        @files = `ssh -n $RemoteUser\@$FileHost \"ls $FilesPath/$directory/mask/*.mnc\"`;
     }
     chomp(@files);
     return @files;
@@ -188,7 +188,7 @@ sub GetFileType {
 
 my $UserID = GetInsertedUser($TaskID);
 print "TaskID: $TaskID\n";
-my @files = `ssh -n $RemoteUser\@$FileHost \"ls -d /data/ibis/data/cbrain/*.mnc-*-$TaskID-[0-9]*\"`;
+my @files = `ssh -n $RemoteUser\@$FileHost \"ls -d $FilesPath/*.mnc-*-$TaskID-[0-9]*\"`;
 foreach my $file (@files) {
     chomp($file);
 

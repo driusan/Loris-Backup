@@ -6,7 +6,6 @@
 # Takes list of files from STDIN
 # Requires public keys to be setup for the user executing it to pinch
 # TODO: - remote file copying should to be done more efficiently, instead of one ssh execution per file (+1 for the mkdir)
-#   - remote server should be config option. As should remote and local path of minc file, username, and remote directory
 
 require CbrainAPI;
 use NeuroDB::DBI;
