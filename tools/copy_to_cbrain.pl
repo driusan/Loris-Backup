@@ -5,8 +5,7 @@
 # launch a CIVET task, and store the CBrain TaskID in the Loris database
 # Takes list of files from STDIN
 # Requires public keys to be setup for the user executing it to pinch
-# TODO: - Loris DB username/password need to be unhardcoded (use -profile?)
-#   - remote file copying should to be done more efficiently, instead of one ssh execution per file (+1 for the mkdir)
+# TODO: - remote file copying should to be done more efficiently, instead of one ssh execution per file (+1 for the mkdir)
 #   - remote server should be config option. As should remote and local path of minc file, username, and remote directory
 
 require CbrainAPI;
@@ -97,6 +96,10 @@ my $civetprefix = "civet";
 my $UserName = GetConfigOption("CBrainUsername");
 my $Password = GetConfigOption("CBrainPassword");
 
+my $FilePath = GetConfigOption("CBrainFilePath");
+my $RemoteUser = GetConfigOption("FilesUserName");
+my $FileHost = GetConfigOption("FilesHost");
+
 my $UserID = GetUserID($loris_user);
 print "ProviderID: $ProviderID\n";
 print "ToolConfigID: $ToolConfigID\n";
@@ -116,13 +119,13 @@ my %subject_map = ();
 # Would be more efficient to do something like:
 # ssh pinch 'cd /data/ibis/data/cbrain/;mkdir 1316622635; for file in `cat filelists/cbrain.1316622635.txt`; do ln $file /data/ibis/data/cbrain/1316622635/; done'
 # with appropriate config options for directories, hosts, usernames, and not using ssh if not remote
-system("ssh -n ibis\@pinch.bic.mni.mcgill.ca \"mkdir /data/ibis/data/cbrain/$timestamp\"");
+system("ssh -n $RemoteUser\@$FileHost \"mkdir $FilePath/$timestamp\"");
 while(my $line = <>) {
     chomp($line);
     print "$line\n";
     my @paths = split('/', $line);
     $subject_map{$paths[$#paths]} = $paths[$#paths];
-    system("ssh -n ibis\@pinch.bic.mni.mcgill.ca \"ln $line /data/ibis/data/cbrain/$timestamp/\"");
+    system("ssh -n $RemoteUser\@$FileHost \"ln $line $FilePath/$timestamp/\"");
 }
 
 my $agent = CbrainAPI->new(
