@@ -356,6 +356,8 @@ function SendFilesToCBrain($cols, $query) {
     $filelist = getFiles($cols,$query,$timestamp, "cbrain");
     $cmd = sprintf("cat /tmp/cbrain.$timestamp.txt | %s -lorisuser %s -profile prod > %s 2>&1 & echo $! >> %s\n", "perl -I../tools ../tools/copy_to_cbrain.pl", $user->getUsername(), "../logs/cbrain." . $timestamp, "/tmp/cbrain." . $timestamp);
     exec($cmd);
+    $cmd = "rm /tmp/cbrain.$timestamp.txt";
+    exec($cmd);
 }
 
 function printArray($array, $indent=""){
