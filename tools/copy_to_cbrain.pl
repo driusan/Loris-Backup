@@ -4,8 +4,8 @@
 # Script to send minc files to a CBrain server using CBrain API, 
 # launch a CIVET task, and store the CBrain TaskID in the Loris database
 # Takes list of files from STDIN
-# Requires public keys to be setup for the user executing it to pinch
-# TODO: - remote file copying should to be done more efficiently, instead of one ssh execution per file (+1 for the mkdir)
+# Requires public keys to be setup for the user executing it to $RemoteHost
+# TODO: - don't use SSH unless $RemoteHost is set (and not set to localhost)
 
 require CbrainAPI;
 use NeuroDB::DBI;
@@ -115,18 +115,27 @@ print "$loris_user : $UserID\n\n";
 my $timestamp = time();
 my %subject_map = ();
 
-# Would be more efficient to do something like:
-# ssh pinch 'cd /data/ibis/data/cbrain/;mkdir 1316622635; for file in `cat filelists/cbrain.1316622635.txt`; do ln $file /data/ibis/data/cbrain/1316622635/; done'
-# with appropriate config options for directories, hosts, usernames, and not using ssh if not remote
-system("ssh -n $RemoteUser\@$FileHost \"mkdir $FilePath/$timestamp\"");
+# Get the list of files from stdin, and set the subject_map
+# required by cbrain
+my $filelist = "";
 while(my $line = <>) {
     chomp($line);
     print "$line\n";
+    $filelist .= $line . "\n";
     my @paths = split('/', $line);
     $subject_map{$paths[$#paths]} = $paths[$#paths];
-    system("ssh -n $RemoteUser\@$FileHost \"ln $line $FilePath/$timestamp/\"");
+    # Don't copy the file here anymore, it's done in one shot through a shell script below
+    #system("ssh -n $RemoteUser\@$FileHost \"ln $line $FilePath/$timestamp/\"");
 }
+# put list in a file on $FileHost in filelists/cbrain.$timestamp.txt
+system("ssh -n $RemoteUser\@$FileHost \"cat > $FilePath/filelists/cbrain.$timestamp.txt << EOF;\n$filelist\nEOF\n\"");
+# Copy each of the files to directory named $timestamp on $FileHost
+my $cmd = "ssh -n $RemoteUser\@$FileHost \"mkdir $FilePath/$timestamp; for file in \\`cat $FilePath/filelists/cbrain.$timestamp.txt\\`; do ln \\\$file $FilePath/$timestamp/; done\"";
+#print $cmd;
+system($cmd);
 
+# Launch the civet task on CBrain for all the files that were copied and store the
+# TaskID
 my $agent = CbrainAPI->new(
     cbrain_server_url => $cbrainhost 
 );
