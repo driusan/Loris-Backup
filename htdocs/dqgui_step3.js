@@ -10,6 +10,10 @@ function executeQuery(sendTo){
     if(sendTo == 'cbrain') {
         var oCbrainField=IFrameDoc.getElementById("cbrain");
         oCbrainField.value="execute";
+        var m = document.getElementById("message");
+        m.innerHTML = "Launched CIVET task(s) on CBrain. <a href=\"main.php?test_name=civetstatus\">Click here</a> to see status.";
+
+
         //alert(sendTo);
     }
     var oQueryField=IFrameDoc.getElementById("queryData");

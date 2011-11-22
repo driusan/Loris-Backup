@@ -173,6 +173,7 @@ if($user->hasPermission('download_files')) {
 ?>
 <input type='button' value='Click here to download files' onclick="executeQuery('download')"><span id="message">&nbsp;</span>
 <input type="button" value='Click here to launch CIVET on CBrain' onclick="executeQuery('cbrain')" />
+<span id="message">&nbsp;</span>
 <?
 }
 ?>
