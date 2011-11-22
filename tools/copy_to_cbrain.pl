@@ -47,6 +47,9 @@ if(!defined($loris_user)) {
     my $configsth= $dbh->prepare("SELECT c.Value FROM ConfigSettings cs LEFT JOIN Config c ON (c.ConfigID=cs.ID) WHERE cs.Name=?");
     my $useridsth = $dbh->prepare("SELECT ID FROM users WHERE UserId=? LIMIT 1");
     my $newtasksth = $dbh->prepare("INSERT INTO CBrainTasks (UserID, Timestamp, CBrainHost, TaskID, Status) VALUES (?, ?, ?, ?, ?)");
+    my $fileidsth = $dbh->prepare("SELECT FileID FROM files WHERE File like CONCAT('%', ?)");
+    my $insertfilesth = $dbh->prepare("INSERT INTO CBrainSubmittedFiles(FileID, CBrainTaskID) VALUES (?, ?)");
+
     sub _GetSingleVal {
         my $sth = shift;
         my $param = shift;
@@ -69,11 +72,21 @@ if(!defined($loris_user)) {
         my $cbrainhost = shift;
         my $TaskID = shift;
         $newtasksth->execute($UserID, $timestamp, $cbrainhost, $TaskID, 'Unknown');
+        return $dbh->{mysql_insertid};
+    }
+    sub InsertFileList {
+        my $CBrainTaskID = shift;
+        my $filename = shift;
+        my $FileID = _GetSingleVal($fileidsth, $filename);
+        print "$FileID";
+        $insertfilesth->execute($FileID, $CBrainTaskID);
     }
     sub DisconnectDBH {
         $configsth->finish;
         $useridsth->finish;
         $newtasksth->finish;
+        $fileidsth->finish;
+        $insertfilesth->finish;
 
         $dbh->disconnect();
     }
@@ -149,8 +162,23 @@ my $TaskIDs = $agent->create_civet_task_for_collection($ToolConfigID, "CIVET run
 print $agent->error_message();
 print "Looping through @$TaskIDs\n";
 foreach my $TaskID (@$TaskIDs) {
+    my $task = $agent->show_task($TaskID);
+
     print "TaskID: $TaskID\n";
-    InsertNewTask($UserID, $timestamp, $cbrainhost, $TaskID, 'Unknown');
+    my $CBrainTaskID = InsertNewTask($UserID, $timestamp, $cbrainhost, $TaskID, 'Unknown');
+    # $CBrainTaskID = ID from CBrainTasks column in Loris. Used as foreign key.
+    # $TaskID = ID _in_ CBrain for Task. Used with CBrain API
+    
+    my @params = split(/\n/, $task->{'params'});
+    foreach my $param (@params) {
+        if($param =~ m/t1_name:/) {
+            my ($field, $val) = split(/: /,$param);
+            chomp($val);
+            print $val ;
+            InsertFileList($CBrainTaskID, $val);
+            print . "\n";
+        }
+    }
 }
 
 
