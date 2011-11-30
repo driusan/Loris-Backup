@@ -56,7 +56,11 @@
     <!-- print out data rows -->
     {section name=piece loop=$items[item]}
     <td nowrap="nowrap">
+        {if $items[item][piece].name == "Source_File"}
+            <a href="mri_browser.php?sessionID={$items[item][piece].SessionID}">{$items[item][piece].value}</a>
+        {else}
             {$items[item][piece].value}
+        {/if}
     </td>
     {/section}
     </tr>           
