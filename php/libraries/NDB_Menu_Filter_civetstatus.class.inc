@@ -31,11 +31,12 @@ class NDB_Menu_Filter_civetstatus extends NDB_Menu_Filter
                 'Final',
                 );
         $this->order_by = 'f.File';
-        $this->headers = array('CBrain_Task', 'Task_Status', 'Source_File', 'Classify Output', 'Thickness_Left', 'Thickness_Right', 'Surfaces_Left', 'Surfaces_Right', 'Final');
+        $this->headers = array('CBrain_Task', 'Task_Status', 'Source_File', 'Classify_Output', 'Thickness_Left', 'Thickness_Right', 'Surfaces_Left', 'Surfaces_Right', 'Final');
         $this->validFilters = array('ct.Status', 'ct.TaskID', 'f.File', 'SUBSTRING_INDEX(f.File, \'/\', -1)', 'Thickness_Left', 'Thickness_Right', 'Surfaces_Left', 'Surfaces_Right', 'Final');
         $this->formToFilter = array ('Task_Status' => 'ct.Status',
                     'Thickness_Left' => 'Thickness_Left',
                     'Thickness_Right' => 'Thickness_Right',
+                    'Classify_Output' => 'Classify_output',
                     'cbraintaskstatus' => 'ct.Status',
                     'cbraintask' => 'ct.TaskID',
                     'sourcefile' => 'SUBSTRING_INDEX(f.File, \'/\', -1)'
