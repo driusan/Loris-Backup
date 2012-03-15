@@ -286,13 +286,15 @@ class NDB_BVL_Instrument extends PEAR
  
         // get saved data to pre-populate form
         $db =& Database::singleton();
-        $db->select("SELECT * FROM $this->table WHERE CommentID='".$this->getCommentID()."'", $defaults);
+        //$db->select("SELECT * FROM $this->table WHERE CommentID='".$this->getCommentID()."'", $defaults);
+        $defaults = $db->getCouch($this->getCommentID());
+        print_r($defaults);
         if($this->isError($defaults)) {
             return $this->raiseError('Could not get default values for form');
         }
         // set the defaults (call private method _setDefaultsArray
         // which could be overridden if necessary)
-        $defaults = $this->_setDefaultsArray($defaults[0]);
+        $defaults = $this->_setDefaultsArray($defaults['data']); //[0]);
         
         // merge in the localDefaults property so that simple
         // additions to the defaults array no longer requires
@@ -524,7 +526,16 @@ class NDB_BVL_Instrument extends PEAR
             }
         }
         $db =& Database::singleton();
-        $result = $db->update($this->table, $values, array('CommentID'=>$this->getCommentID()));
+        //$result = $db->update($this->table, $values, array('CommentID'=>$this->getCommentID()));
+        $original = $db->getCouch($this->getCommentID());
+        $data = $original['data'];
+        if($data) {
+            $original['data'] = array_merge($data, $values);
+        } else {
+            $original['data'] = $values;
+        }
+        $db->putCouch($this->getCommentID(), $original);
+
         if($this->isError($result)) {
             print "Error saving data: ".$result->getMessage()."<br>\n";
             return $this->raiseError('Could not save to database' . $result->getMessage());

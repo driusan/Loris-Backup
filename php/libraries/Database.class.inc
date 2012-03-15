@@ -547,6 +547,35 @@ class Database extends PEAR
         }
     } // end function _trackChanges
 
+    function getCouch($docid) {
+        $socket = fsockopen("localhost", "5984", $err_num, $err_string);
+        if(!$socket) {
+            return;
+        }
+        fwrite($socket, "GET /test2/$docid\n\n");
+        while(!feof($socket)) {
+            $response .= fgets($socket);
+        }
+
+        fclose($socket);
+        $splitted = split("\r\n\r\n", $response);
+        $val = json_decode($splitted[1], true);
+        if($val['error'] == 'not_found') {
+            return array('_id' => $val['_id'], '_rev' => $val['_rev']);
+        }
+        return $val;
+    }
+    function putCouch($docid, $value, $db="test2") {
+        $json = json_encode($value, JSON_PRETTY_PRINT & JSON_FORCE_OBJECT);
+        $socket = fsockopen("localhost", "5984", $err_num, $err_string);
+        fwrite($socket, "PUT /$db/$docid\r\n");
+        fwrite($socket, "Content-Length: " . strlen($json));
+        fwrite($socket, "\r\n\r\n$json\r\n");
+        while(!feof($socket)) {
+            $response .= fgets($socket);
+        }
+        fclose($socket);
+    }
     function _printQuery($query, $params=null) {
         if(!$this->_showQueries) return;
         if($params) {
