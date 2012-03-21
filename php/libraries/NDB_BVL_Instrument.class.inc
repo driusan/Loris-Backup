@@ -286,15 +286,22 @@ class NDB_BVL_Instrument extends PEAR
  
         // get saved data to pre-populate form
         $db =& Database::singleton();
-        //$db->select("SELECT * FROM $this->table WHERE CommentID='".$this->getCommentID()."'", $defaults);
-        $defaults = $db->getCouch($this->getCommentID());
-        print_r($defaults);
+        $config = NDB_Config::singleton();
+        if($config->getSetting("EnableCouch") == "1") {
+            $defaults = $db->getCouch($this->getCommentID());
+            // set the defaults (call private method _setDefaultsArray
+            // which could be overridden if necessary)
+            $defaults = $this->_setDefaultsArray($defaults['data']); 
+        } else {
+            $db->select("SELECT * FROM $this->table WHERE CommentID='".$this->getCommentID()."'", $defaults);
+            // set the defaults (call private method _setDefaultsArray
+            // which could be overridden if necessary)
+            $defaults = $this->_setDefaultsArray($defaults[0]);
+        }
+
         if($this->isError($defaults)) {
             return $this->raiseError('Could not get default values for form');
         }
-        // set the defaults (call private method _setDefaultsArray
-        // which could be overridden if necessary)
-        $defaults = $this->_setDefaultsArray($defaults['data']); //[0]);
         
         // merge in the localDefaults property so that simple
         // additions to the defaults array no longer requires
@@ -519,6 +526,7 @@ class NDB_BVL_Instrument extends PEAR
      */
     function _save($values)
     {
+        $config = NDB_Config::singleton();
         // clear any fields starting with __
         foreach(array_keys($values) AS $key) {
             if(strpos($key, '__') === 0) {
@@ -526,15 +534,17 @@ class NDB_BVL_Instrument extends PEAR
             }
         }
         $db =& Database::singleton();
-        //$result = $db->update($this->table, $values, array('CommentID'=>$this->getCommentID()));
-        $original = $db->getCouch($this->getCommentID());
-        $data = $original['data'];
-        if($data) {
-            $original['data'] = array_merge($data, $values);
-        } else {
-            $original['data'] = $values;
+        $result = $db->update($this->table, $values, array('CommentID'=>$this->getCommentID()));
+        if($config->getSetting("EnableCouch") == "1") {
+            $original = $db->getCouch($this->getCommentID());
+            $data = $original['data'];
+            if($data) {
+                $original['data'] = array_merge($data, $values);
+            } else {
+                $original['data'] = $values;
+            }
+            $db->putCouch($this->getCommentID(), $original);
         }
-        $db->putCouch($this->getCommentID(), $original);
 
         if($this->isError($result)) {
             print "Error saving data: ".$result->getMessage()."<br>\n";
