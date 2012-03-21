@@ -547,12 +547,12 @@ class Database extends PEAR
         }
     } // end function _trackChanges
 
-    function getCouch($docid) {
+    function getCouch($docid, $db="test2") {
         $socket = fsockopen("localhost", "5984", $err_num, $err_string);
         if(!$socket) {
             return;
         }
-        fwrite($socket, "GET /test2/$docid\n\n");
+        fwrite($socket, "GET /$db/$docid\n\n");
         while(!feof($socket)) {
             $response .= fgets($socket);
         }
