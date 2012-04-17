@@ -223,6 +223,7 @@ class MRIViewScansPage {
             // the jivs
             $fileData[$fIdx]['jivFilename'] = basename($file->getParameter('File'));
             $fileData[$fIdx]['jivAddress'] = str_replace('_check.jpg', '', $file->getParameter('check_pic_filename'));
+            $fileData[$fIdx]['CBrainID'] = $file->getParameter('CBrainID');
 
             $fIdx++;
         }

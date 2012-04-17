@@ -179,6 +179,14 @@ return true;
                     {elseif $files[fIdx].xstep != ""}{$files[fIdx].xstep}{else}&nbsp;{/if}
                     </td>
             </tr>
+            <tr>
+                <th>View scan in</th>
+                <td>
+                    <a href="#{$smarty.section.fIdx.index}" onClick='javascript:show_jiv(new Array("{$files[fIdx].jivFilename}"), new Array("{$files[fIdx].jivAddress}"), false)'>JIV Viewer</a>
+                    {*| HTML5 Minc Viewer *}
+                    {if $files[fIdx].CBrainID} | <a href="https://portal.cbrain.mcgill.ca/userfiles/{$files[fIdx].CBrainID}">CBrain</a>{/if}
+                </td>
+            </tr>
             </table>
         </td>
 
