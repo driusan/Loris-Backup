@@ -9,7 +9,7 @@ $client->initialize();
 $config =& NDB_Config::singleton();
 $db = Database::singleton();
 
-$test = $db->pselect("SELECT f.* from flag f join session s ON (s.ID=f.SessionID) LEFT JOIN candidate c ON (c.CandID=s.CandID) WHERE f.CommentID NOT LIKE 'DDE%' AND s.Active='Y' AND c.Active='Y' AND Test_name='mri_parameter_form'", array());
+$test = $db->pselect("SELECT f.* from flag f join session s ON (s.ID=f.SessionID) LEFT JOIN candidate c ON (c.CandID=s.CandID) WHERE f.CommentID NOT LIKE 'DDE%' AND s.Active='Y' AND c.Active='Y' AND c.CenterID <> 1 AND s.Current_stage <> 'Recycling Bin' AND c.PSCID <> 'scanner'", array());
 $couchdbName = 'testt';
 //print_r($test);
 foreach($test as $row) {
