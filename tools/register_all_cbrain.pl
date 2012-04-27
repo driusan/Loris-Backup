@@ -72,6 +72,7 @@ my $cbrainhost = GetConfigOption("CBrainHost");
 my $UserName = GetConfigOption("CBrainUsername");
 my $Password = GetConfigOption("CBrainPassword");
 my $ProviderID= GetConfigOption("CBrainRegisterProviderID");
+my $DefaultProjectID = GetConfigOption("CBrainDefaultProjectID");
 
 my $agent = CbrainAPI->new(
     cbrain_server_url => $cbrainhost
@@ -83,10 +84,10 @@ my $i = 0;
 while(my @row = $executed->fetchrow_array) {
     my $FileID = $row[0];
     my $file = basename($row[1]);
-    print "registering $FileID, $file\n";
+    print "registering $FileID, $file into $DefaultProjectID\n";
     $i++;
     #my $CBrainFileID = $i;
-    my $CBrainFileID= $agent->register_file($file, 'MincFile', $ProviderID);
+    my $CBrainFileID= $agent->register_file($file, 'MincFile', $ProviderID, $DefaultProjectID);
     UpdateFileID($FileID, $CBrainFileID);
 }
 

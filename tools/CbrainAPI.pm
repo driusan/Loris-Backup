@@ -1,16 +1,29 @@
 #!/usr/bin/perl
 
+#
+# CBRAIN Project
+#
+# Copyright (C) 2008-2012
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 ##############################################################################
 #                                                                            #
 # CBRAIN Project Perl API
-#                                                                            #
-##############################################################################
-#                                                                            #
-#                       CONFIDENTIAL & PROPRIETARY                           #
-#       Nothing herein is to be disclosed in any way without the prior       #
-#              express written permission of Pierre Rioux                    #
-#                                                                            #
-#                Copyright 2008 MNI, All rights reserved.                    #
 #                                                                            #
 ##############################################################################
 
@@ -49,7 +62,7 @@ user agent for connecting to CBRAIN portal servers.
   use CbrainAPI;
 
   # Create our API user agent
-  my $agent = CbrainAPI->new( 
+  my $agent = CbrainAPI->new(
      cbrain_server_url => "https://example.com:abcd/",
   );
 
@@ -81,7 +94,7 @@ pairs, or a hash of such pairs.
 
 Required options:
 
-=over 
+=over
 
 =item cbrain_server_url
 
@@ -165,8 +178,6 @@ sub login {
   my $user  = shift || die "Need to be provided with a username.\n";
   my $pw    = shift || die "Need to be provided with a password.\n";
 
-  $self->reset_status();
-
   # Create the user agent object
   my $ua           = $self->{'ua'} = LWP::UserAgent->new();
   my $agent_string = "CbrainPerlAPI/$VERSION";
@@ -180,10 +191,10 @@ sub login {
   $rev_name    =  "UnknownRev"  if $rev_name =~ /^\s*$/;
   $ua->agent("CbrainPerlAPI/$VERSION $os_name/$rev_name");
   $ua->cookie_jar(HTTP::Cookies->new(file => $self->{'cookie_store_file'}, autosave => 1));
-  
+
   # Login to CBRAIN
   my $logreq  = $self->prep_req(GET => "/session/new");
-  $self->{'raw_reply'} = $ua->request($logreq);
+  $self->request();
   unless ($self->{'raw_reply'}->is_success) {
     $self->{'cbrain_error_message'} = "Cannot connect to server: " . $self->{'raw_reply'}->status_line;
     return undef;
@@ -206,7 +217,7 @@ sub login {
   );
   #$logreq->content_type('application/json');
   #$logreq->content("{ authenticity_token: \"$auth_token\", login: \"$user\", password: \"$pw\" }");
-  $self->{'raw_reply'} = $ua->request($logreq);
+  $self->request();
   unless ($self->{'raw_reply'}->is_success) {
     $self->{'cbrain_error_message'} = "Cannot login: "  . $self->{'raw_reply'}->status_line;
     return undef;
@@ -245,23 +256,24 @@ sub register_file {
   my $basename  = shift || die "Need to be provided with a basename.\n";
   my $basetype  = shift || die "Need to be provided with a filetype.\n";
   my $dp_id     = shift || die "Need to be provided with a data provider_id.\n";
+  my $group_id  = shift;
 
-  $self->reset_status();
+  $self->prep_req(POST => "/data_providers/$dp_id/register");
 
-  my $ua = $self->{'ua'};
-  unless ($ua) {
-    $self->{'cbrain_error_message'} = "Not logged in.";
-    return undef;
-  }
-
-  my $req = $self->prep_req(POST => "/data_providers/$dp_id/register");
   $self->content_uri_escape_params(
     'filetypes[]' => "$basetype-$basename",
     'basenames[]' => $basename,
     'commit'      => 'Register files',
   );
 
-  $self->{'raw_reply'} = $ua->request($req);
+  if (defined($group_id) && $group_id =~ /^\d+$/) {
+    $self->content_uri_escape_params(
+      'other_group_id' => $group_id,
+    );
+  }
+
+  $self->request();
+
   unless ($self->{'raw_reply'}->is_success) {
     $self->{'cbrain_error_message'} = "Cannot register: " . $self->{'raw_reply'}->status_line;
     return undef;
@@ -297,17 +309,10 @@ sub show_userfile {
 
   my $userfile_id = shift || die "Need a userfile ID.\n";
 
-  $self->reset_status();
+  $self->prep_req(GET => "/userfiles/$userfile_id");
 
-  my $ua = $self->{'ua'};
-  unless ($ua) {
-    $self->{'cbrain_error_message'} = "Not logged in.";
-    return undef;
-  }
+  $self->request();
 
-  my $req = $self->prep_req(GET => "/userfiles/$userfile_id");
-
-  $self->{'raw_reply'} = $ua->request($req);
   unless ($self->{'raw_reply'}->is_success) {
     $self->{'cbrain_error_message'} = "Cannot get userfile: " . $self->{'raw_reply'}->status_line;
     return undef;
@@ -347,7 +352,7 @@ mandatory in this API.
 I<task_params> is a hash with the params specific to the chosen tool.
 The usual Rails convention for encoding complex structures apply:
 
-  task_params = {
+  $task_params = {
     "outfilename"    => "myout.txt",
     "somearray[]"    => [ '1', '2' ],
     "substruct[key1] => "val1",
@@ -359,8 +364,8 @@ Example:
   # On files 123 and 212, run the program defined
   # by tool_config #45.
   $tid = $session->create_task( [ 123, 212 ], 45,
-          { description => 'MyTask' },
-          { gravity     => 42 }
+          { 'description' => 'MyTask' },
+          { 'gravity'     => 42 }
          );
 
 The method returns an array of the newly created task IDs
@@ -376,18 +381,9 @@ sub create_task {
   my $task_attrs     = shift || {};
   my $task_params    = shift || {};
   $file_ids = [ $file_ids ] unless ref($file_ids) eq "ARRAY";
-
-  $self->reset_status();
-
-  my $ua = $self->{'ua'};
-  unless ($ua) {
-    $self->{'cbrain_error_message'} = "Not logged in.";
-    return undef;
-  }
-
   $task_attrs->{'tool_config_id'} = $tool_config_id;
 
-  my $req = $self->prep_req(POST => "/tasks");
+  $self->prep_req(POST => "/tasks");
 
   # Task attributes
   foreach my $key qw( user_id group_id description tool_config_id ) {
@@ -407,7 +403,7 @@ sub create_task {
     $self->content_uri_escape_params( "cbrain_task[params]$spec_key" => $val );
   }
 
-  $self->{'raw_reply'} = $ua->request($req);
+  $self->request();
   unless ($self->{'raw_reply'}->is_success) {
     $self->{'cbrain_error_message'} = "Cannot create task: " . $self->{'raw_reply'}->status_line;
     return undef;
@@ -420,7 +416,7 @@ sub create_task {
   }
   unless (@$ids > 0) {
     $self->{'cbrain_error_message'} = "Cannot parse IDs from XML tasklist reply.";
-    print $content;
+    #print $content;
     return undef;
   }
   $self->{'cbrain_success'} = 1;
@@ -450,7 +446,7 @@ basenames of the mincfiles found in the FileCollection to
 the subject ID to use for each of those basenames. For
 instance:
 
-  { 
+  {
     'abcd_23.mnc' => 'john',
     'def_1211.mnc.gz' => 'subject21',
   }
@@ -484,7 +480,7 @@ sub create_civet_task_for_collection {
 
   my $tool_config_id    = shift || die "Need a tool_config ID.\n";
   my $description       = shift || "";
-  
+
   my $col_id            = shift || die "Need a collection ID.\n";
   my $prefix            = shift || die "Need a prefix name.\n";
   my $mincfiles_to_dsid = shift || die "Need hash providing subject IDs for each minc basenames.\n";
@@ -559,17 +555,10 @@ sub show_task {
 
   my $tid   = shift || die "Need a task ID.\n";
 
-  $self->reset_status();
+  $self->prep_req(GET => "/tasks/$tid");
 
-  my $ua = $self->{'ua'};
-  unless ($ua) {
-    $self->{'cbrain_error_message'} = "Not logged in.";
-    return undef;
-  }
+  $self->request();
 
-  my $req = $self->prep_req(GET => "/tasks/$tid");
-
-  $self->{'raw_reply'} = $ua->request($req);
   unless ($self->{'raw_reply'}->is_success) {
     $self->{'cbrain_error_message'} = "Cannot get task: " . $self->{'raw_reply'}->status_line;
     return undef;
@@ -587,8 +576,94 @@ sub show_task {
   return $parsed;
 }
 
+=item show_user()
 
-  
+Fetch the user structure associated with a user ID. The
+result is a hash table created by XML::Simple to represent
+the structure.
+
+Example:
+
+  my $uinfo = $session->show_user(2);
+  print "Full name: ", $tinfo->{'full-name'}, "\n";
+
+=cut
+sub show_user {
+  my $self  = shift;
+  my $class = ref($self) || die "This is an instance method.\n";
+
+  my $uid   = shift || die "Need a user ID.\n";
+
+  $self->prep_req(GET => "/users/$uid");
+
+  $self->request();
+
+  unless ($self->{'raw_reply'}->is_success) {
+    $self->{'cbrain_error_message'} = "Cannot get user: " . $self->{'raw_reply'}->status_line;
+    return undef;
+  }
+
+  # Parse XML
+  my $xml = $self->{'raw_reply'}->content();
+  my $parsed = eval { XMLin($xml) };
+  if ($@) {
+    $self->{'cbrain_error_message'} = "Cannot parse XML for task: $@";
+    return undef;
+  }
+
+  return $parsed;
+}
+
+=item create_user()
+
+Creates a new user. Returns the ID of the created user.
+
+  my $att = {
+    "full_name"             => 'Mack The Knife',
+    "login"                 => "mtheknife",
+    "email"                 => 'pierre.rioux@mcgill.ca',
+    "city"                  => 'Paris',
+    "country"               => 'France',
+    "time_zone"             => 'Mazatlan',
+    "role"                  => 'user',
+    "password"              => 'qwer1234ABC',
+    "password_confirmation" => 'qwer1234ABC'
+  };
+  my $uid = $agent->create_user( $att );
+
+=cut
+sub create_user {
+  my $self  = shift;
+  my $class = ref($self) || die "This is an instance method.\n";
+
+  my $att   = shift || die "Need a set of user attributes.\n";
+
+  $self->prep_req(POST => "/users");
+  while (my ($key,$val) = each %$att) {
+    $self->content_uri_escape_params( "user[$key]" => $val );
+  }
+
+  $self->content_uri_escape_params( "no_password_reset_needed" => "1" );
+  $self->request();
+
+  unless ($self->{'raw_reply'}->is_success) {
+    $self->{'cbrain_error_message'} = "Cannot create user: " . $self->{'raw_reply'}->status_line;
+    return undef;
+  }
+
+  my $content = $self->{'raw_reply'}->content(); # XML rep of the new user
+  if ($content =~ m#(\d+)</id>#i) {
+    my $id = $1;
+    $self->{'cbrain_success'} = 1;
+    return $id;
+  }
+  $self->{'cbrain_error_message'} = "Cannot parse ID from XML user reply.";
+  return undef;
+}
+
+
+
+
 =back
 =cut
 
@@ -643,10 +718,34 @@ sub reset_status {
 
 =cut
 
+
+
 #########################################
-# Internal methods
+=head2 Low Level Methods
+=cut
 #########################################
 
+=pod
+
+These methods are at a lower level than the
+methods described above; they allow a
+program to send more arbitrary requests to
+the CBRAIN server side. For instance, starting
+with a properly logged-in user agent $agent:
+
+  $agent->prep_req(POST => "/userfiles/49");
+  $agent->content_uri_escape_params("userfile[group_id]", 23);
+  $my_reply = $agent->request();
+
+=over
+
+=item prep_req()
+
+Prepares a request for the CBRAIN server. The first argument
+must be a HTTP action (one of 'POST', 'GET', 'PUT' or 'DELETE').
+The second argument is a path.
+
+=cut
 sub prep_req {
   my $self  = shift;
   my $class = ref($self) || die "This is an instance method.\n";
@@ -654,22 +753,47 @@ sub prep_req {
   my $action = shift || die "Need HTTP method (POST, GET, etc).\n";
   my $path   = shift || die "Need CBRAIN route.\n";
 
+  $self->reset_status();
+
+  my $ua = $self->{'ua'};
+  unless ($ua) {
+    $self->{'cbrain_error_message'} = "Not logged in.";
+    return undef;
+  }
+
   my $url = $self->{'cbrain_server_url'}; # contains trailing /
 
   $path =~ s#^/*##;
   $path = "$url$path"; # slash is inside $url
-  
+
   my $req = $self->{'_cur_req'} = HTTP::Request->new($action => $path);
   $req->header('Accept' => 'text/xml');
   $req;
 }
 
+=item content_uri_escape_params()
+
+Once a POST or PUT request has been prepared with prep_req(),
+this method can be use to add parameters to the body of the
+request. This method can be called several times to add as
+many parameters as necessary.
+
+  $agent->content_uri_escape_params( paramname => "somevalue" );
+  $agent->content_uri_escape_params( "user[full_name]" => "Pierre Rioux" );
+
+=cut
 sub content_uri_escape_params {
   my $self  = shift;
   my $class = ref($self) || die "This is an instance method.\n";
   my $hash  = (@_ == 1 && ref($_[0]) eq 'HASH') ? shift : { @_ };
 
-  my $req = $self->{'_cur_req'} || die "No request prepared?!?";
+  my $req = $self->{'_cur_req'};
+
+  unless ($req) {
+    $self->{'cbrain_error_message'} = "No request prepared?!?";
+    return undef;
+  }
+
   $req->content_type('application/x-www-form-urlencoded') unless $req->content_type();
 
   my $auth_token = $self->{'auth_token'} || die "Not logged in.";
@@ -689,6 +813,40 @@ sub content_uri_escape_params {
   $req->content($res);
   $res;
 }
+
+=item request()
+
+Once a request has been prepared with prep_req() and
+parameters added to it with content_uri_escape_params(),
+the request can be sent to the CBRAIN server by calling
+this method. The returned value is a HTTP::Reponse,
+as returned by LWP.
+
+  my $http_response = $agent->request();
+
+=cut
+sub request() {
+  my $self  = shift;
+  my $class = ref($self) || die "This is an instance method.\n";
+
+  my $ua = $self->{'ua'};
+  unless ($ua) {
+    $self->{'cbrain_error_message'} = "Not logged in.";
+    return undef;
+  }
+
+  my $req = $self->{'_cur_req'};
+
+  unless ($req) {
+    $self->{'cbrain_error_message'} = "No request prepared?!?";
+    return undef;
+  }
+
+  $self->{'raw_reply'} = $ua->request($req);
+  $self->{'raw_reply'};
+}
+
+=back
 
 =head1 AUTHOR
 
