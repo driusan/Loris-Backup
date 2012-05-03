@@ -10,7 +10,7 @@ $config =& NDB_Config::singleton();
 $db = Database::singleton();
 
 $test = $db->pselect("SELECT f.* from flag f join session s ON (s.ID=f.SessionID) LEFT JOIN candidate c ON (c.CandID=s.CandID) WHERE f.CommentID NOT LIKE 'DDE%' AND s.Active='Y' AND c.Active='Y' AND c.CenterID <> 1 AND s.Current_stage <> 'Recycling Bin' AND c.PSCID <> 'scanner'", array());
-$couchdbName = 'testt';
+$couchdbName = 'ibis2';
 //print_r($test);
 foreach($test as $row) {
     $query = "SELECT * FROM " . $row['Test_name'] . " WHERE CommentID=:CID";
@@ -34,7 +34,7 @@ foreach($test as $row) {
         $db->putCouch($row['CommentID'], array(
             'Meta' => array(
                 'DocType' => $row['Test_name'], 
-                'identifier' => array($candidate['Site'], $candidate['PSCID'], $session['Visit_label']),
+                'identifier' => array($candidate['PSCID'], $session['Visit_label']),
             ),
             'data' => $values), $couchdbName
         );

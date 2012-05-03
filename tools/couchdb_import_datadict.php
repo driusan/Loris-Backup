@@ -10,7 +10,7 @@ $config =& NDB_Config::singleton();
 $db = Database::singleton();
 
 $test = $db->pselect("select pt.SourceFrom, pt.SourceField, pt.Type, pt.Description from parameter_type pt LEFT JOIN parameter_type_category_rel ptcr USING (ParameterTypeID) LEFT JOIN parameter_type_category ptc USING (ParameterTypeCategoryID) WHERE pt.Queryable=1 AND ptc.Type='Instrument' ORDER BY SourceFrom", array());
-$couchdbName = 'ibis';
+$couchdbName = 'ibis2';
 $putValue = array('Meta' => array('DataDict' => true));
 $Dictionary = array();
 $Instrument = array();
