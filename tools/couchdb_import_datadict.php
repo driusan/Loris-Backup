@@ -23,6 +23,10 @@ function PutVal($Dictionary, $Name, $stub) {
         $stub['_rev'] = $old_value['_rev'];
     }
     $stub['DataDictionary'] = array($Name => $Dictionary);
+    $stub['DataDictionary'][$Name]['Administration'] = array('Description' => 'Administration for ' . $Name, 'Type' => "enum('None', 'Partial', 'All')");
+    $stub['DataDictionary'][$Name]['Data_entry'] = array('Description' => 'Data Entry status for ' . $Name, 'Type' => "enum('In Progress', 'Complete')");
+    $stub['DataDictionary'][$Name]['Validity'] = array('Description' => 'Validity of data for for ' . $Name, 'Type' => "enum('Questionable', 'Invalid', 'Valid')");
+
     $db->putCouch("DataDictionary:$Name", $stub, $couchdbName);
 }
 

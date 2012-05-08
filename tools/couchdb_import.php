@@ -13,7 +13,7 @@ $test = $db->pselect("SELECT f.* from flag f join session s ON (s.ID=f.SessionID
 $couchdbName = 'ibis2';
 //print_r($test);
 foreach($test as $row) {
-    $query = "SELECT * FROM " . $row['Test_name'] . " WHERE CommentID=:CID";
+    $query = "SELECT f.Administration, f.Validity, f.Data_entry, i.* FROM " . $row['Test_name'] . " i join flag f USING(CommentID) WHERE CommentID=:CID";
     $values = $db->pselectRow($query, array("CID" => $row['CommentID']));
     $query = "SELECT ID, CenterID, Visit_label, SubprojectID, CandID FROM session WHERE ID=:SessionID";
     $session = $db->pselectRow($query, array("SessionID" => $row['SessionID']));
