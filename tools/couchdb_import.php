@@ -19,6 +19,11 @@ foreach($test as $row) {
     $session = $db->pselectRow($query, array("SessionID" => $row['SessionID']));
     $query = "SELECT CandID, PSCID, psc.alias as Site FROM candidate LEFT JOIN psc USING(CenterID) WHERE CandID=:CandidateID";
     $candidate = $db->pselectRow($query, array("CandidateID" => $session['CandID']));
+    $query = "SELECT full_name FROM examiners WHERE examinerID=:eid";
+    $examiner = $db->pselectRow($query, array('eid' => $values['Examiner']));
+    if(is_numeric($values['Examiner'])) {
+        $values['Examiner'] = $examiner['full_name'];
+    }
     $doc = $db->getCouch($row['CommentID'], $couchdbName);
     //print_r($doc);
 
