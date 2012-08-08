@@ -1,7 +1,7 @@
 <?php
 
 require_once "PEAR.php";
-require_once "HTML/QuickForm.php";
+require_once "HTML/QuickForm2.php";
 
 /**
 * class for managing file uploads

@@ -144,11 +144,13 @@ class NDB_Menu_Filter_timepoint_flag extends NDB_Menu_Filter
         }
 
         // add the mode select
-        $this->form->setDefaults(array('mode' => $this->mode));
+        $this->form->addDataSource(new HTML_QuickForm2_DataSource_Array(array('mode'=>$this->mode))); 
+     // $this->form->setDefaults(array('mode' => $this->mode));
         $this->addSelect('mode', 'Mode:', array('' => 'Select one', 'subject' => 'Subject', 'flag' => 'Flag'), array("onchange"=>"parameterTimepointFilterForm.submit()"));
 
         // add the mode select
-        $this->form->setDefaults(array('subprojectID' => $this->mode));
+        $this->form->adddataSource(new HTML_QuickForm2_DataSource_Array(array('subprojectID'=>$this->mode)));  
+     // $this->form->setDefaults(array('subprojectID' => $this->mode));
         $this->addSelect('subprojectID', null, array('%' => 'All', '1' => 'Objective 1', '2' => 'Objective 2'));
 
         // get the list of study sites - to be replaced by the Site object

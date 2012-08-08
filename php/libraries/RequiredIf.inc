@@ -18,7 +18,7 @@
 //
 // $Id: RequiredIf.inc,v 3.1 2004/04/15 15:12:22 jharlap Exp $
 
-require_once 'HTML/QuickForm/Rule.php';
+require_once 'HTML/QuickForm2/Rule.php';
 
 /**
  * Rule to require an element only if another element matches a given value
@@ -41,7 +41,7 @@ require_once 'HTML/QuickForm/Rule.php';
  * @package HTML_QuickForm
  * @version $Revision: 3.1 $
  */
-class HTML_QuickForm_Rule_RequiredIf extends HTML_QuickForm_Rule
+class HTML_QuickForm_Rule_RequiredIf extends HTML_QuickForm2_Rule
 {
 
     // define the set of valid operators
