@@ -547,6 +547,36 @@ class Database extends PEAR
         }
     } // end function _trackChanges
 
+    function queryCouch($designdoc, $view, $startkey, $endkey, $reduce, $db="test2") {
+        $socket = fsockopen("localhost", "5984", $err_num, $err_string);
+        if(!$socket) {
+            return;
+        }
+        if($reduce) {
+            $reduce = "true";
+        } else {
+            $reduce = "false";
+        }
+        fwrite($socket, "GET /$db/_design/$designdoc/_view/$view?startkey=" .json_encode($startkey) . 
+                                "&endkey=" . json_encode($endkey) .
+                                "&reduce=$reduce\n\n");
+        /*print ("GET /$db/_design/$designdoc/_view/$view?startkey=" .json_encode($startkey) . 
+                                "&endkey=" . json_encode($endkey) .
+                                "&reduce=$reduce\n\n");
+         */
+        while(!feof($socket)) {
+            $response .= fgets($socket);
+            //print $response;
+        }
+
+        fclose($socket);
+        $splitted = split("\r\n\r\n", $response);
+        $ar_response = json_decode($splitted[1], true);
+        //print($splitted[1]);
+        //print_r($ar_response);
+
+        return $ar_response['rows'];
+    }
     function getCouch($docid, $db="test2") {
         $socket = fsockopen("localhost", "5984", $err_num, $err_string);
         if(!$socket) {
@@ -565,12 +595,23 @@ class Database extends PEAR
         }
         return $val;
     }
+
     function putCouch($docid, $value, $db="test2") {
         $json = json_encode($value, JSON_PRETTY_PRINT & JSON_FORCE_OBJECT);
         $socket = fsockopen("localhost", "5984", $err_num, $err_string);
         fwrite($socket, "PUT /$db/$docid\r\n");
         fwrite($socket, "Content-Length: " . strlen($json));
         fwrite($socket, "\r\n\r\n$json\r\n");
+        while(!feof($socket)) {
+            $response .= fgets($socket);
+        }
+        fclose($socket);
+    }
+    function deleteCouch($docid, $db="test2") {
+        $origdoc = $this->getCouch($docid, $db);
+
+        $socket = fsockopen("localhost", "5984", $err_num, $err_string);
+        fwrite($socket, "DELETE /$db/$docid?rev=" . $origdoc['_rev'] . " HTTP/1.0\r\n\r\n");
         while(!feof($socket)) {
             $response .= fgets($socket);
         }
