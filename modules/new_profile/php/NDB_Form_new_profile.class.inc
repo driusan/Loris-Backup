@@ -94,7 +94,8 @@ class NDB_Form_new_profile extends NDB_Form
             $this->addBasicDate('edc2', 'Confirm EDC', $dateOptions);
 
             // expected date of confinement rules
-            $this->addRule(array('edc1', 'edc2'), 'EDC fields must match', 'compare');
+            $this->form->getElementById('edc1')->addRule('eq', 'EDC fields must match', $this->form->getElementById('edc2'));
+         // $this->add_Rule(array('edc1', 'edc2'), 'EDC fields must match', 'compare');
         }
 
         if($config->getSetting("useProjects") == "true") {
@@ -118,7 +119,7 @@ class NDB_Form_new_profile extends NDB_Form
             $this->addBasicText('PSCID', 'PSCID');
         }
 
-        $this->form->addFormRule(array(&$this, '_validate'));
+     ///   $this->form->addFormRule(array(&$this, '_validate'));
     }
 
     function _validate($values)

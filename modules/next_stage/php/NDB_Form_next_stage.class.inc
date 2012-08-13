@@ -115,9 +115,9 @@ class NDB_Form_next_stage extends NDB_Form
 
         // add date rules
         $this->addRule('date1', 'Date is required', 'required');
-        $this->addRule(array('date1', 'date2'), 'Date fields must match', 'compare');
+        $this->form->getElementById('date1')->addRule('eq', 'Date fields must match', $this->form->getElementById('date2'));
 
-        $this->form->addFormRule(array(&$this, '_validate'));
+    ///    $this->form->addFormRule(array(&$this, '_validate'));
     }
 
     function _validate($values)

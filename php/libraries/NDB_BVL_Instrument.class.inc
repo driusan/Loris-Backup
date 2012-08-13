@@ -652,7 +652,7 @@ class NDB_BVL_Instrument extends NDB_Page
         
         $this->addGroupRule('Date_taken', 'Date of Administration is required', 'required');
         
-        $this->form->registerRule('checkdate', 'callback', '_checkDateTaken');
+    ///    $this->form->registerRule('checkdate', 'callback', '_checkDateTaken');
         $this->addRule('Date_taken', 'Date of Administration is invalid', 'checkdate');
         
         $this->addRule('Examiner', 'Examiner is required', 'required');
