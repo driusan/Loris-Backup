@@ -26,7 +26,6 @@ class TestOfLoris extends LorisTest {
         $this->assertNoPattern("/Welcome to the Database/");
         $this->login("UnitTester", "4test4");
         $this->assertResponse(200);
-        //print_r($this);
         $this->assertPattern("/Welcome to the Database/");
         $this->get($this->url . "/main.php?test_name=doesntexist");
         $this->assertResponse(404);
@@ -92,14 +91,22 @@ class TestOfLoris extends LorisTest {
                         $Choice = $Element->_options[1];
                     }
                     $this->setField($name, $Choice->getValue());
+                } else if ($Element instanceof SimpleCheckboxTag) {
+                    $result = $this->setField($name, "1"); //$name, "on");
+                    if($result === FALSE) {
+                        print "Invalid value.";
+                    }
+                    //$this->setAttribute($name, "checked", "checked");
+                    //print_r($this);
                 } else {
+                    //print get_class($Element);
                     // Otherwise it's most likely a text element, so set the value to something arbitrary. 
                     // We use "1" since there might be a rule that the data needs to be numeric in some instruments
                     $this->setField($name, 1);
                }
             }
         }
-        $this->clickSubmit("Save Data");
+        $response = $this->clickSubmit("Save Data");
     }
 
     // Access each instrument to make sure there's no errors, 
@@ -142,12 +149,12 @@ class TestOfLoris extends LorisTest {
                 //print "Saving $Flag[CommentID] with _status answered\n";
                 $this->_testSave(0);
                 $this->assertNoPattern("/The following errors occured/");
-                $this->assertPattern('/^<!DOCTYPE/', "Unhandled error while saving $Flag[Test_name], CommentID: $Flag[CommentID] URL: " . $url);
+                $this->assertPattern('/^(<!DOCTYPE|<p><font)/', "Unhandled error while saving $Flag[Test_name], CommentID: $Flag[CommentID] URL: " . $url);
                 // Then test with them equal to not answered
                 $this->_testSave(1);
                 //print "Saving $Flag[CommentID] with _status not_answered\n";
                 $this->assertNoPattern("/The following errors occured/");
-                $this->assertPattern('/^<!DOCTYPE/', "Unhandled error while saving $Flag[Test_name], CommentID: $Flag[CommentID] URL: " . $url);
+                $this->assertPattern('/^(<!DOCTYPE|<p><font)/', "Unhandled error while saving $Flag[Test_name], CommentID: $Flag[CommentID] URL: " . $url);
                 // TODO: Go through subpages of the instrument here.
             }
 
