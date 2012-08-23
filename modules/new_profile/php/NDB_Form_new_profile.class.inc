@@ -64,7 +64,8 @@ class NDB_Form_new_profile extends NDB_Form
         $this->tpl_data['PSCID'] = $candidate->getPSCID();
 
         // freeze it, just in case
-        $this->form->freeze();
+        $this->form->toggleFrozen(TRUE);
+     // $this->form->freeze();
     }
 
     function new_profile()
@@ -119,7 +120,9 @@ class NDB_Form_new_profile extends NDB_Form
             $this->addBasicText('PSCID', 'PSCID');
         }
 
-     ///   $this->form->addFormRule(array(&$this, '_validate'));
+    
+      // $this->form->addFormRule(array(&$this, '_validate')); 
+      $this->form->getElementById('dob1')->addRule('callback', 'Date of Birth fields must match.', array(&$this, '_validate'));               //array('callback' => '_validate', 'arguments' => array($values)));
     }
 
     function _validate($values)
@@ -132,9 +135,10 @@ class NDB_Form_new_profile extends NDB_Form
                 $values['dob1']['d'] != $values['dob2']['d'] ||
                 $values['dob1']['Y'] != $values['dob2']['Y'])
         {
-            $errors['dob1'] = 'Date of Birth fields must match.';
+        //    $errors['dob1'] = 'Date of Birth fields must match.';
+              return TRUE;
         }
-        if($config->getSetting('useEDC') == "true") {
+    /*    if($config->getSetting('useEDC') == "true") {
             if (strlen(implode($values['edc1'])) > 2 && !_checkDate($values['edc1'])) {
                 $errors['edc1'] = 'EDC is not a valid date';
             }
@@ -166,7 +170,9 @@ class NDB_Form_new_profile extends NDB_Form
             $errors['ProjectID'] = "Project is required";
         }
 
-        return $errors;
+        return $errors;   */
+        return FALSE;
+        
     }
 
 }
