@@ -9,6 +9,8 @@ class TestOfNDARScript extends UnitTestCase {
         $this->factory = NDB_Factory::singleton();
         $this->factory->setTesting(true);
         $this->db = $this->factory->Database();
+        $this->CommonCandidateFields = 'c.IBISID, s.Visit_label, CASE s.SubprojectID WHEN 1 THEN \'High Risk\' WHEN 2 THEN \'High Risk\' WHEN 3 THEN \'Control\' END as Cohort, c.CandidateGUID, c.DoB, c.Gender, ROUND(DATEDIFF(i.Date_taken, c.DoB) / (365/12)) AS Candidate_Age_in_Months,';
+        $this->CommonProbandFields = 'c.IBISID, s.Visit_label, CASE s.SubprojectID WHEN 1 THEN \'High Risk\' WHEN 2 THEN \'High Risk\' WHEN 3 THEN \'Control\' END as Cohort, c.ProbandGUID, c.ProbandDoB, c.ProbandGender, ROUND(DATEDIFF(i.Date_taken, c.ProbandDoB) / (365/12)) AS Proband_Age_in_Months,';
 
     }
     function tearDown() {
@@ -226,7 +228,7 @@ class TestOfNDARScript extends UnitTestCase {
             'q_93_computational_ability_ever_code'
         );
         $ndar = new NDAR_Release('adi_r_proband');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.ProbandGUID, c.ProbandDoB, c.ProbandGender, DATEDIFF(i.Date_taken, c.ProbandDoB) / 30 AS Proband_Age_in_Months, f.Validity, i.Date_taken, i.' . implode($fields, ", i."));
+        $this->assertEqual($ndar->getFields(), $this->CommonProbandFields . ' f.Validity, i.Date_taken, i.' . implode($fields, ", i."));
     }
 
     function testAOSIFields() {
@@ -297,7 +299,7 @@ class TestOfNDARScript extends UnitTestCase {
             'q21_social_referencing_notes_status'
         );
         $ndar = new NDAR_Release('aosi');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, f.Validity, i.Date_taken, i.' . implode($fields, ", i."));
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' f.Validity, i.Date_taken, i.' . implode($fields, ", i."));
     }
 
     function testSEQFields() {
@@ -462,12 +464,12 @@ class TestOfNDARScript extends UnitTestCase {
             'q43_notice_change_status'
         );
         $ndar = new NDAR_Release('seq');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, f.Validity, i.Date_taken, i.' . implode($fields, ", i."));
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, i.' . implode($fields, ", i."));
     }
 
     function testMCHATProbandFields() {
         $ndar = new NDAR_Release('m_chat_proband');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.ProbandGUID, c.ProbandDoB, c.ProbandGender, DATEDIFF(i.Date_taken, c.ProbandDoB) / 30 AS Proband_Age_in_Months, i.Date_taken, i.total_item_fails, i.total_critical_fails, i.score, i.q1_swung_on_knee, i.q2_interest_other_children, i.q3_climbing, i.q4_peek_a_boo, i.q5_pretends, i.q6_index_point, i.q7_index_interest, i.q8_play_properly, i.q9_bring_objects, i.q10_look_eye, i.q11_oversensitive, i.q12_smile_to_face, i.q13_imitate_you, i.q14_respond_to_name, i.q15_point_and_look, i.q16_walk, i.q17_look_at_similar, i.q18_unusual_finger, i.q19_try_to_attract, i.q20_wondered_deaf, i.q21_understand_speach, i.q22_stare_no_purpose, i.q23_look_at_face');
+        $this->assertEqual($ndar->getFields(), $this->CommonProbandFields . ' i.Date_taken, i.total_item_fails, i.total_critical_fails, i.score, i.q1_swung_on_knee, i.q2_interest_other_children, i.q3_climbing, i.q4_peek_a_boo, i.q5_pretends, i.q6_index_point, i.q7_index_interest, i.q8_play_properly, i.q9_bring_objects, i.q10_look_eye, i.q11_oversensitive, i.q12_smile_to_face, i.q13_imitate_you, i.q14_respond_to_name, i.q15_point_and_look, i.q16_walk, i.q17_look_at_similar, i.q18_unusual_finger, i.q19_try_to_attract, i.q20_wondered_deaf, i.q21_understand_speach, i.q22_stare_no_purpose, i.q23_look_at_face');
     }
     function testMullenFields() {
         $ndar = new NDAR_Release('mullen');
@@ -661,17 +663,17 @@ class TestOfNDARScript extends UnitTestCase {
             'i.receptive_language_description',
             'i.receptive_language_age_equivalent'
         );
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, f.Validity, i.Date_taken, ' . implode($fields, ', '));
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' f.Validity, i.Date_taken, ' . implode($fields, ', '));
     }
     function testSCQProbandFields() {
         $ndar = new NDAR_Release('scq_proband');
         $fields = array('i.score', 'i.q1_talk_short_phrases', 'i.q2_to_and_fro', 'i.q3_odd_phrases', 'i.q4_socially_inappropriate', 'i.q5_pronouns_mixed', 'i.q6_words_invented', 'i.q7_said_same_thing', 'i.q8_particular_way', 'i.q9_facial_expressions', 'i.q10_hand_like_tool', 'i.q11_interests_that_preoccupy', 'i.q12_interested_in_parts', 'i.q13_intense_interests', 'i.q14_sight_feel_sound', 'i.q15_mannerisms', 'i.q16_complicated_movements', 'i.q17_deliberate_injury', 'i.q18_carry_objects', 'i.q19_particular_friends', 'i.q20_talk_friendly', 'i.q21_spontaneously_copy', 'i.q22_spontaneously_point', 'i.q23_gestures', 'i.q24_nod_yes', 'i.q25_shake_no', 'i.q26_look_directly', 'i.q27_smile_back', 'i.q28_show_things', 'i.q29_offer_share', 'i.q30_join_enjoyment', 'i.q31_comfort', 'i.q32_wanted_something', 'i.q33_facial_expressions', 'i.q34_spontaneously_join', 'i.q35_play_pretend', 'i.q36_seem_interested', 'i.q37_respond_positively', 'i.q38_came_into_room', 'i.q39_play_imaginative', 'i.q40_play_cooperatively');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.ProbandGUID, c.ProbandDoB, c.ProbandGender, DATEDIFF(i.Date_taken, c.ProbandDoB) / 30 AS Proband_Age_in_Months, f.Validity, i.Date_taken, ' . implode($fields, ', '));
+        $this->assertEqual($ndar->getFields(), $this->CommonProbandFields . ' f.Validity, i.Date_taken, ' . implode($fields, ', '));
     }
     function testSCQSubjectFields() {
         $ndar = new NDAR_Release('scq_subject');
         $fields = 'i.score, i.q1_talk_short_phrases, i.q2_to_and_fro, i.q3_odd_phrases, i.q4_socially_inappropriate, i.q5_pronouns_mixed, i.q6_words_invented, i.q7_said_same_thing, i.q8_particular_way, i.q9_facial_expressions, i.q10_hand_like_tool, i.q11_interests_that_preoccupy, i.q12_interested_in_parts, i.q13_intense_interests, i.q14_sight_feel_sound, i.q15_mannerisms, i.q16_complicated_movements, i.q17_deliberate_injury, i.q18_carry_objects, i.q19_particular_friends, i.q20_talk_friendly, i.q21_spontaneously_copy, i.q22_spontaneously_point, i.q23_gestures, i.q24_nod_yes, i.q25_shake_no, i.q26_look_directly, i.q27_smile_back, i.q28_show_things, i.q29_offer_share, i.q30_join_enjoyment, i.q31_comfort, i.q32_wanted_something, i.q33_facial_expressions, i.q34_spontaneously_join, i.q35_play_pretend, i.q36_seem_interested, i.q37_respond_positively, i.q38_came_into_room, i.q39_play_imaginative, i.q40_play_cooperatively';
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, i.Date_taken, ' . $fields);
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, ' . $fields);
     }
 
     function testVinelandFields() {
@@ -1240,15 +1242,15 @@ class TestOfNDARScript extends UnitTestCase {
             'i.WRN_RAW',
             'i.WRN_SW',
             'i.WRN_VSCALE');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, f.Validity, i.Date_taken, ' . implode($fields, ', '));
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' f.Validity, i.Date_taken, ' . implode($fields, ', '));
         $ndar = new NDAR_Release('vineland_proband');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.ProbandGUID, c.ProbandDoB, c.ProbandGender, DATEDIFF(i.Date_taken, c.ProbandDoB) / 30 AS Proband_Age_in_Months, f.Validity, i.Date_taken, ' . implode($fields, ', '));
+        $this->assertEqual($ndar->getFields(), $this->CommonProbandFields . ' f.Validity, i.Date_taken, ' . implode($fields, ', '));
     }
 
     function testRBSRFields() {
         $ndar = new NDAR_Release('rbs_r');
         $fields = array('i.Date_taken', 'i.Candidate_Age', 'i.respondent', 'i.respondent_specify', 'i.I_stereotyped_endorsed', 'i.I_stereotyped_score', 'i.II_self_injurious_endorsed', 'i.II_self_injurious_score', 'i.III_compulsive_endorsed', 'i.III_compulsive_score', 'i.IV_ritualistic_endorsed', 'i.IV_ritualistic_score', 'i.overall_endorsed', 'i.overall_score', 'i.q1_whole_body', 'i.q10_bites_self', 'i.q11_pulls', 'i.q12_rubs_or_scratches', 'i.q13_inserts_finger_or_object', 'i.q14_skin_picking', 'i.q15_arranging_ordering', 'i.q16_completeness', 'i.q17_washing_cleaning', 'i.q18_checking', 'i.q19_counting', 'i.q2_head', 'i.q20_hoarding_saving', 'i.q21_repeating', 'i.q22_touch_tap', 'i.q23_eating_mealtime', 'i.q24_sleeping_bedtime', 'i.q25_self_care', 'i.q26_travel_transportation', 'i.q27_play_leisure', 'i.q28_communication', 'i.q29_insists_things_remain', 'i.q3_hand_finger', 'i.q30_objects_to_visiting', 'i.q31_upset_if_interrupted', 'i.q32_walking_in_a_pattern', 'i.q33_insists_on_sitting_at_same_place', 'i.q34_dislikes_change', 'i.q35_insists_on_particular_door', 'i.q36_likes_same_cd', 'i.q37_resists_changing_activities', 'i.q38_insists_on_same_routine', 'i.q39_insists_that_specific', 'i.q4_locomotion', 'i.q40_fascination_preoccupation', 'i.q41_strongly_attached', 'i.q42_preoccupation_with_parts', 'i.q43_fascination_with_movement', 'i.q5_object_usage', 'i.q6_sensory', 'i.q7_hits_self_body_part', 'i.q8_hits_self_against_surface', 'i.q9_hits_self_with_object', 'i.V_sameness_endorsed', 'i.V_sameness_score', 'i.VI_restricted_endorsed', 'i.VI_restricted_score');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, f.Validity, i.Date_taken, ' . implode($fields, ', '));
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, ' . implode($fields, ', '));
     }
 
     function testMacarthurFields() {
@@ -1759,7 +1761,7 @@ class TestOfNDARScript extends UnitTestCase {
             'later_gestures_percentile',
             'phrases_understood_number',
             'phrases_understood_percentile');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, f.Validity, i.Date_taken, i.' . implode($fields, ', i.'));
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, i.' . implode($fields, ', i.'));
 
     }
     function testCSBSFields() {
@@ -2005,16 +2007,15 @@ class TestOfNDARScript extends UnitTestCase {
             'q_19_sequence_action_schemes_6_action2',
             'q_20_stacks_tower',
             'q_20_stacks_tower_raw_score');
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, f.Validity, i.Date_taken, i.' . implode($fields, ', i.'));
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' f.Validity, i.Date_taken, i.' . implode($fields, ', i.'));
     }
 
     function testIBQRFields() {
         $ndar = new NDAR_Release('ibq_r');
         $fields = 'i.Candidate_Age, i.activity_level, i.approach, i.cuddliness, i.distress_to_limitations, i.duration_of_orienting, i.falling_reactivity, i.fear, i.high_pleasure, i.low_pleasure, i.perceptual_sensitivity, i.sadness, i.smiling_and_laughter, i.soothability, i.vocal_reactivity, i.q_1, i.q_10, i.q_100, i.q_101, i.q_102, i.q_103, i.q_104, i.q_105, i.q_106, i.q_107, i.q_108, i.q_109, i.q_11, i.q_110, i.q_111, i.q_112, i.q_113, i.q_114, i.q_115, i.q_116, i.q_117, i.q_118, i.q_119, i.q_12, i.q_120, i.q_121, i.q_122, i.q_123, i.q_124, i.q_125, i.q_126, i.q_127, i.q_128, i.q_129, i.q_13, i.q_130, i.q_131, i.q_132, i.q_133, i.q_134, i.q_135, i.q_136, i.q_137, i.q_138, i.q_139, i.q_14, i.q_140, i.q_141, i.q_142, i.q_143, i.q_144, i.q_145, i.q_146, i.q_147, i.q_148, i.q_149, i.q_15, i.q_150, i.q_151, i.q_152, i.q_153, i.q_154, i.q_155, i.q_156, i.q_157, i.q_158, i.q_159, i.q_16, i.q_160, i.q_161, i.q_162, i.q_163, i.q_164, i.q_165, i.q_166, i.q_167, i.q_168, i.q_169, i.q_17, i.q_170, i.q_171, i.q_172, i.q_173, i.q_174, i.q_175, i.q_176, i.q_177, i.q_178, i.q_179, i.q_18, i.q_180, i.q_181, i.q_182, i.q_183, i.q_184, i.q_185, i.q_186, i.q_187, i.q_188, i.q_189, i.q_19, i.q_190, i.q_191, i.q_2, i.q_20, i.q_21, i.q_22, i.q_23, i.q_24, i.q_25, i.q_26, i.q_27, i.q_28, i.q_29, i.q_3, i.q_30, i.q_31, i.q_32, i.q_33, i.q_34, i.q_35, i.q_36, i.q_37, i.q_38, i.q_39, i.q_4, i.q_40, i.q_41, i.q_42, i.q_43, i.q_44, i.q_45, i.q_46, i.q_47, i.q_48, i.q_49, i.q_5, i.q_50, i.q_51, i.q_52, i.q_53, i.q_54, i.q_55, i.q_56, i.q_57, i.q_58, i.q_59, i.q_6, i.q_60, i.q_61, i.q_62, i.q_63, i.q_64, i.q_65, i.q_66, i.q_67, i.q_68, i.q_69, i.q_7, i.q_70, i.q_71, i.q_72, i.q_73, i.q_74, i.q_75, i.q_76, i.q_77, i.q_78, i.q_79, i.q_8, i.q_80, i.q_81, i.q_82, i.q_83, i.q_84, i.q_85, i.q_86, i.q_87, i.q_88, i.q_89, i.q_9, i.q_90, i.q_91, i.q_92, i.q_93, i.q_94, i.q_95, i.q_96, i.q_97, i.q_98, i.q_99';
-        $this->assertEqual($ndar->getFields(), 'c.IBISID, c.CandidateGUID, c.DoB, c.Gender, DATEDIFF(i.Date_taken, c.DoB) / 30 AS Candidate_Age_in_Months, f.Validity, i.Date_taken, ' . $fields);
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, ' . $fields);
 
     }
-    // THIS IS A MARKER THAT GOES HERE ********************
     function testADIRQuery() {
         $ndar = new NDAR_Release('adi_r_proband');
         $this->assertEqual($ndar->getQuery(), 'SELECT ' . $ndar->getFields() . ' FROM adi_r_proband i JOIN flag f ON (f.CommentID=i.CommentID) JOIN session s ON (s.ID=f.SessionID) JOIN candidate c ON (c.CandID=s.CandID) WHERE ' . $ndar->getWhere());
@@ -2416,7 +2417,7 @@ class TestOfNDARScript extends UnitTestCase {
                 'IBISID' => 'IBIS8368',
                 'ProbandGUID' => 'NDARAH978FW6',
                 'Validity' => '',
-                'Date_taken' => '06/16/2008',
+                'Date_taken' => '06/01/2008',
                 'A_Total' => '11',
                 'BNV_Total' => '',
                 'BV_Total' => '12',
@@ -2595,7 +2596,7 @@ class TestOfNDARScript extends UnitTestCase {
                 'IBISID' => 'IBIS4956',
                 'ProbandGUID' => 'NDARPT857GJ6',
                 'Validity' => '',
-                'Date_taken' => '11/20/2008',
+                'Date_taken' => '11/01/2008',
                 'A_Total' => '27',
                 'BNV_Total' => '13',
                 'BV_Total' => '',
