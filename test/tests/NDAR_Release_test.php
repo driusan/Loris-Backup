@@ -2808,4 +2808,9 @@ class TestOfNDARScript extends UnitTestCase {
         $ndar->expectOnce('writeResults');
         $ndar->run();
     }
+    function testHeadMeasurementsSubject() {
+        $ndar = new NDAR_Release('head_measurements_subject');
+        $fields = 'i.head_circumference1, i.head_circumference1_status, i.head_circumference2, i.head_circumference2_status, i.length1, i.length1_status, i.length2, i.length2_status, i.measurement_method, i.weight1, i.weight1_status, i.weight2, i.weight2_status';
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, ' . $fields);
+    }
 }
