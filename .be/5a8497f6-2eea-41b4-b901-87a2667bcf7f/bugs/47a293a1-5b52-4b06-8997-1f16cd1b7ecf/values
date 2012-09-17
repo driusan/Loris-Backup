@@ -7,7 +7,7 @@ reporter: Dave MacFarlane <driusan@gmail.com>
 severity: minor
 
 
-status: open
+status: fixed
 
 
 summary: Add prefrontal to NDAR Script
