@@ -380,6 +380,10 @@ class Database extends PEAR
     }
     function execute($prepared, $params) {
         $execRun = $prepared->execute($params);
+        if($execRun === FALSE )
+        {
+            return PEAR::raiseError('Could not execute statement' . $prepared->queryString . " with bindings " . print_r($params, true));
+        }
         $rows = $prepared->fetchAll(PDO::FETCH_ASSOC);
         return $rows;
     }
@@ -395,10 +399,17 @@ class Database extends PEAR
 
     function pselectRow($query, $params) {
         $rows = $this->pselect($query . " LIMIT 1", $params);
+        if(PEAR::isError($rows)) {
+            return $rows;
+        }
         return $rows[0];
     }
     function pselectOne($query, $params) {
         $result = $this->pselectRow($query, $params);
+        if(PEAR::isError($result)) {
+            return $result;
+        }
+
         if(!$this->isError($result) && is_array($result) && count($result)) {
 
             list(,$result) = each($result);
