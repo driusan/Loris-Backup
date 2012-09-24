@@ -41,7 +41,7 @@ class TestOfNDARScript extends UnitTestCase {
         $ndar = new NDAR_Release('vineland_proband');
         $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND s.CenterID IN (2, 3, 4, 5) AND s.SubprojectID IN (1, 2) AND c.ProbandGUID IS NOT NULL");
         $ndar = new NDAR_Release('vineland_subject');
-        $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL");
+        $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL");
         $ndar = new NDAR_Release('rbs_r');
         $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL");
         $ndar = new NDAR_Release('macarthur_words_gestures');
@@ -1098,6 +1098,11 @@ class TestOfNDARScript extends UnitTestCase {
             'i.MS_STD_SCORE',
             'i.MS_SUM_VSCALES_FOR_DOMAIN',
             'i.MS_SW',
+            'i.`OTH_95%_CI` AS OTH_95PERCENT_CI',
+            'i.OTH_ADAPT_LEVEL',
+            'i.OTH_RAW',
+            'i.OTH_STATUS',
+            'i.OTH_VSCALE',
             'i.OTH_ITEM_1_NDAR',
             'i.OTH_ITEM_2_NDAR',
             'i.OTH_ITEM_3_NDAR',
