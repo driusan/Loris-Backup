@@ -9,8 +9,8 @@ class TestOfNDARScript extends UnitTestCase {
         $this->factory = NDB_Factory::singleton();
         $this->factory->setTesting(true);
         $this->db = $this->factory->Database();
-        $this->CommonCandidateFields = 'c.IBISID, s.Visit_label, s.CenterID, CASE s.SubprojectID WHEN 1 THEN \'High Risk\' WHEN 2 THEN \'High Risk\' WHEN 3 THEN \'Control\' END as Cohort, c.CandidateGUID, c.DoB, c.Gender, ROUND(DATEDIFF(i.Date_taken, c.DoB) / (365/12)) AS Candidate_Age_in_Months,';
-        $this->CommonProbandFields = 'c.IBISID, s.Visit_label, s.CenterID, CASE s.SubprojectID WHEN 1 THEN \'High Risk\' WHEN 2 THEN \'High Risk\' WHEN 3 THEN \'Control\' END as Cohort, c.ProbandGUID, c.ProbandDoB, c.ProbandGender, ROUND(DATEDIFF(i.Date_taken, c.ProbandDoB) / (365/12)) AS Proband_Age_in_Months,';
+        $this->CommonCandidateFields = 'c.IBISID, s.Visit_label, s.CenterID as Site, CASE s.SubprojectID WHEN 1 THEN \'High Risk\' WHEN 2 THEN \'High Risk\' WHEN 3 THEN \'Low Risk\' END as Cohort, c.CandidateGUID, c.DoB, c.Gender, ROUND(DATEDIFF(i.Date_taken, c.DoB) / (365/12)) AS Candidate_Age_in_Months,';
+        $this->CommonProbandFields = 'c.IBISID, s.Visit_label, s.CenterID as Site, CASE s.SubprojectID WHEN 1 THEN \'High Risk\' WHEN 2 THEN \'High Risk\' WHEN 3 THEN \'Low Risk\' END as Cohort, c.ProbandGUID, c.ProbandDoB, c.ProbandGender, ROUND(DATEDIFF(i.Date_taken, c.ProbandDoB) / (365/12)) AS Proband_Age_in_Months,';
 
     }
     function tearDown() {
@@ -41,7 +41,7 @@ class TestOfNDARScript extends UnitTestCase {
         $ndar = new NDAR_Release('vineland_proband');
         $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND s.CenterID IN (2, 3, 4, 5) AND s.SubprojectID IN (1, 2) AND c.ProbandGUID IS NOT NULL");
         $ndar = new NDAR_Release('vineland_subject');
-        $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24')) OR (s.SubprojectID=1 AND UPPER(s.Visit_label)='V06')) AND c.CandidateGUID IS NOT NULL");
+        $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL");
         $ndar = new NDAR_Release('rbs_r');
         $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL");
         $ndar = new NDAR_Release('macarthur_words_gestures');
@@ -51,7 +51,24 @@ class TestOfNDARScript extends UnitTestCase {
         $ndar = new NDAR_Release('ibq_r');
         $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL");
         $ndar = new NDAR_Release('head_measurements_subject');
-        $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL");
+         $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL");
+        $ndar = new NDAR_Release('prefrontal_task');
+         $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V12', 'V24') AND c.CandidateGUID IS NOT NULL");
+
+        $ndar = new NDAR_Release('fyi');
+        $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND s.SubprojectID=3 AND UPPER(s.Visit_label)='V12' AND c.CandidateGUID IS NOT NULL");
+
+        $ndar = new NDAR_Release('edi');
+        $this->assertEqual($ndar->getWhere(), "COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND f.Administration='All' AND f.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', i.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=i.CommentID OR cu.CommentId2=i.CommentID) AND s.CenterID IN (2, 3, 4, 5) AND s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24') AND c.CandidateGUID IS NOT NULL");
+
+        $ndar = new NDAR_Release('charge');
+        $this->assertEqual($ndar->getWhere(), "-- Make sure at least one of the instruments was done since they're all left joins above
+                     COALESCE(audflag.CommentID, medpsychflag.CommentID, neuroscreenflag.CommentID, tsiflag.CommentID) IS NOT NULL AND
+                    -- Standard filters
+                    COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal')
+                    AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal')
+                    AND s.CenterID IN (2, 3, 4, 5) AND ((s.SubprojectID=1 AND UPPER(s.Visit_label)='V06') OR (s.SubprojectID=3 AND UPPER(s.Visit_label) IN ('V06', 'V12', 'V24'))) AND c.CandidateGUID IS NOT NULL"
+        );
     }
 
     function testADIRFields() {
@@ -2791,7 +2808,7 @@ class TestOfNDARScript extends UnitTestCase {
     }
 
     function testDemographics() {
-        $query = "SELECT DISTINCT IBISID, CandidateGUID, ProbandGUID, Gender, ProbandGender, c.CenterID, DoB, CASE s.SubprojectID WHEN 1 THEN 'High Risk' WHEN 2 THEN 'High Risk' WHEN 3 THEN 'Control' END as Cohort FROM candidate c JOIN session s ON (s.CandID=c.CandID) WHERE c.Active='Y' AND s.Active='Y' AND c.CandidateGUID IS NOT NULL";
+        $query = "SELECT DISTINCT IBISID, CandidateGUID, ProbandGUID, Gender, ProbandGender, c.CenterID as Site, DoB, CASE s.SubprojectID WHEN 1 THEN 'High Risk' WHEN 2 THEN 'High Risk' WHEN 3 THEN 'Low Risk' END as Cohort FROM candidate c JOIN session s ON (s.CandID=c.CandID) WHERE c.Active='Y' AND s.Active='Y' AND COALESCE(s.Current_stage, '') <> 'Recycling Bin' AND COALESCE(s.Visit, '') NOT IN ('Failure', 'Withdrawal') AND COALESCE(s.Screening, '') NOT IN ('Failure', 'Withdrawal') AND c.CandidateGUID IS NOT NULL AND s.SubprojectID IN (1, 2, 3) AND c.CenterID IN (2, 3, 4, 5)";
         $ndar = new NDAR_Release_Partial('demographics');
         $this->db->expectCallCount('pselect', 1);
         $this->db->expectAt(0, 'pselect', array($query, '*'));
@@ -2802,15 +2819,109 @@ class TestOfNDARScript extends UnitTestCase {
             'ProbandGUID' => 'FakeGUID2',
             'Gender' => 'Male',
             'ProbandGender' => 'Female',
-            'CenterID' => 3,
-            'Cohort' => 'Control',
+            'Site' => 3,
+            'Cohort' => 'Low Risk',
         )));
         $ndar->expectOnce('writeResults');
         $ndar->run();
+
+        $ndar = new NDAR_Release('demographics');
+        $this->assertEqual($ndar->getQuery(), $query);
     }
     function testHeadMeasurementsSubject() {
         $ndar = new NDAR_Release('head_measurements_subject');
-        $fields = 'i.head_circumference1, i.head_circumference1_status, i.head_circumference2, i.head_circumference2_status, i.length1, i.length1_status, i.length2, i.length2_status, i.measurement_method, i.weight1, i.weight1_status, i.weight2, i.weight2_status';
+        $fields = 'i.head_circumference1, i.head_circumference1_status, i.head_circumference2, i.head_circumference2_status, i.head_circumference_unit, i.length1, i.length1_status, i.length2, i.length2_status, i.head_length_unit, i.measurement_method, i.weight1, i.weight1_status, i.weight2, i.weight2_status, i.weight_unit';
         $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, ' . $fields);
+    }
+
+    function testPrefrontalTask() {
+        $ndar = new NDAR_Release('prefrontal_task');
+        $fields = 'i.training, i.training_finds_partially_covered, i.training_finds_fully_covered, i.training_retrieves_R_well, i.training_retrieves_R_well_trial, i.training_retrieves_R_well_trial_of, i.training_retrieves_L_well, i.training_retrieves_L_well_trial, i.training_retrieves_L_well_trial_of, i.start_side, i.trial_1, i.trial_2, i.trial_3, i.trial_4, i.trial_5, i.trial_6, i.trial_7, i.trial_8, i.trial_9, i.trial_10, i.trial_11, i.trial_12, i.trial_13, i.trial_14, i.trial_15, i.trial_16, i.trial_17, i.trial_18, i.trial_19, i.trial_20, i.trial_21, i.trial_22, i.trial_23, i.trial_24, i.first_reversal, i.second_reversal, i.third_reversal, i.fourth_reversal, i.validity_of_data, i.invalidity_reason, i.invalidity_comment, i.invalidity_comment_status, i.5sec_overall_correct, i.5sec_overall_trials, i.5sec_reversals_correct, i.5sec_reversals_trials, i.12sec_overall_correct, i.12sec_overall_trials, i.12sec_reversals_correct, i.12sec_reversals_trials';
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, ' . $fields);
+    }
+
+    function testFYIFields() {
+        $ndar = new NDAR_Release('fyi');
+        $fields = 'i.person_filling_out, i.person_filling_out_specify, i.person_filling_out_specify_status, i.risk_score, i.percentile, i.soc_com_risk, i.sen_reg_risk, i.orientrec, i.affeng, i.imitate, i.express, i.senproc, i.regpat, i.react, i.repplay, i.q_1, i.q_2, i.q_3, i.q_4, i.q_5, i.q_6, i.q_7, i.q_8, i.q_9, i.q_10, i.q_11, i.q_12, i.q_13, i.q_14, i.q_15, i.q_16, i.q_17, i.q_18, i.q_19, i.q_20, i.q_21, i.q_22, i.q_23, i.q_24, i.q_25, i.q_26, i.q_27, i.q_28, i.q_29, i.q_30, i.q_31, i.q_32, i.q_33, i.q_34, i.q_35, i.q_36, i.q_37, i.q_38, i.q_39, i.q_40, i.q_41, i.q_42, i.q_43, i.q_44, i.q_45, i.q_46, i.q_47, i.q_48, i.q_49, i.q_50, i.q_51, i.q_52, i.q_53, i.q_54, i.q_55, i.q_56, i.q_57, i.q_58, i.q_59, i.q_60, i.sounds_p, i.sounds_b, i.sounds_t, i.sounds_d, i.sounds_k, i.sounds_g, i.sounds_m, i.sounds_n, i.sounds_w, i.sounds_y, i.sounds_h, i.sounds_s, i.q_62, i.q_62_status, i.q_63, i.q_63_status';
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, ' . $fields);
+    }
+
+    function testEDIFields() {
+        $ndar = new NDAR_Release('edi');
+        $fields = 'i.score_0_3_regulatory, i.score_0_3_total_symptoms, i.score_10_12_communication, i.score_10_12_regulatory, i.score_10_12_repetitive_behaviour, i.score_10_12_social, i.score_10_12_total_symptoms, i.score_13_15_communication, i.score_13_15_regulatory, i.score_13_15_repetitive_behaviour, i.score_13_15_social, i.score_13_15_total_symptoms, i.score_16_18_communication, i.score_16_18_regulatory, i.score_16_18_repetitive_behaviour, i.score_16_18_social, i.score_16_18_total_symptoms, i.score_19_21_communication, i.score_19_21_regulatory, i.score_19_21_repetitive_behaviour, i.score_19_21_social, i.score_19_21_total_symptoms, i.score_22_24_communication, i.score_22_24_regulatory, i.score_22_24_repetitive_behaviour, i.score_22_24_social, i.score_22_24_total_symptoms, i.score_4_6_regulatory, i.score_4_6_social, i.score_4_6_total_symptoms, i.score_7_9_communication, i.score_7_9_regulatory, i.score_7_9_social, i.score_7_9_total_symptoms, i.EDI1, i.EDI2, i.EDI3, i.EDI4, i.EDI5, i.EDI6, i.EDI7, i.EDI8, i.EDI8ot, i.EDI8ot_status, i.EDI9, i.EDI10, i.EDI11, i.EDI12, i.EDI13, i.EDI14, i.EDI15, i.EDI16, i.EDI17, i.EDI18, i.EDI19, i.EDI19ot, i.EDI19ot_status, i.EDI20, i.EDI21, i.EDI22, i.EDI23, i.EDI24, i.EDI25, i.EDI26, i.EDI27, i.EDI28, i.EDI29, i.EDI30, i.EDI31, i.EDI32, i.EDI33, i.EDI33ot, i.EDI33ot_status, i.EDI34, i.EDI35, i.EDI36, i.EDI37, i.EDI38, i.EDI39, i.EDI40, i.EDI41, i.EDI42, i.EDI43, i.EDI44, i.EDI45, i.EDI45ot, i.EDI45ot_status, i.EDI46, i.EDI47, i.EDI48, i.EDI49, i.EDI50, i.EDI51, i.EDI52, i.EDI53, i.EDI54, i.EDI55, i.EDI56, i.EDI57, i.EDI58, i.EDI58ot, i.EDI58ot_status, i.EDI59, i.EDI60, i.EDI61, i.EDI62, i.EDI63, i.EDI64, i.EDI65, i.EDI66, i.EDI67, i.EDI68, i.EDI69, i.EDI70, i.EDI70ot, i.EDI70ot_status, i.EDI71, i.EDI72, i.EDI73, i.EDI74, i.EDI75, i.EDI76, i.EDI77, i.EDI78, i.EDI79, i.EDI80, i.EDI81, i.EDI82, i.EDI82ot, i.EDI82ot_status, i.EDI83, i.EDI84, i.EDI85, i.EDI86, i.EDI87, i.EDI88, i.EDI89, i.EDI90, i.EDI91, i.EDI92, i.EDI93, i.EDI94, i.EDI95, i.EDI96, i.EDI96ot, i.EDI96ot_status, i.inj, i.inj_month, i.inj_month_status, i.dear, i.dear_month, i.dear_month_status, i.conf, i.conf_month, i.conf_month_status, i.legl, i.legl_month, i.legl_month_status, i.emp, i.emp_month, i.emp_month_status, i.crim, i.crim_month, i.crim_month_status, i.other_1, i.other_1_status, i.other_1_code, i.other_1_month, i.other_1_month_status, i.other_2, i.other_2_status, i.other_2_code, i.other_2_month, i.other_2_month_status, i.comnt, i.comnt_status';
+        $this->assertEqual($ndar->getFields(), $this->CommonCandidateFields . ' i.Date_taken, ' . $fields);
+    }
+
+    function testChargeQuery() {
+        $ndar = new NDAR_Release('charge');
+        $fields = array(
+            // Common fields
+            "c.IBISID", "s.Visit_label", "s.CenterID as Site", "CASE s.SubprojectID WHEN 1 THEN 'High Risk' WHEN 2 THEN 'High Risk' WHEN 3 THEN 'Low Risk' END as Cohort",
+            // Audiology fields
+            'aud.Date_taken as Audiology_Date_taken', 'aud.Candidate_Age as Audiology_Candidate_Age', 'aud.test_results',
+            // Med Psych hist fields
+            'medpsych.Date_taken as Med_Psych_Hist_Date_Taken', 'medpsych.Candidate_Age as Med_Psych_Hist_Candidate_Age', 'medpsych.q16_has_child_ever', 'medpsych.q15_c_fever_seizures', 'medpsych.q15_seizures_convulsions', 'medpsych.q17_birth_defects',
+            // Neuroscreen fields
+            'neuroscreen.Date_taken as Neuroscreen_Date_Taken', 'neuroscreen.Candidate_Age as Neuroscreen_Candidate_Age', 'neuroscreen.q19_other_physical_abnormalities', 'neuroscreen.q1_strabismus', 'neuroscreen.q6_ear_formation',
+            // TSI fields
+            'tsi.Date_taken as TSI_Date_Taken', 'tsi.Candidate_Age as TSI_Candidate_Age', 'tsi.med_his_q_5_medications', 'tsi.med_his_q_5_medications_describe', 'tsi.med_his_q_8_brain_MRI_results', 'tsi.congenital_heart_problems', 'tsi.med_his_q_6_allergies', 'tsi.med_his_q_6_allergies_describe'
+
+        );
+        $this->assertEqual($ndar->getQuery(), "SELECT " . implode($fields, ", ") . " FROM session s JOIN candidate c USING (CandID)
+                    LEFT JOIN flag audflag ON (s.ID=audflag.SessionID AND audflag.Test_name='audiology' AND audflag.Administration='All' AND audflag.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', audflag.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=audflag.CommentID OR cu.CommentId2=audflag.CommentID) )
+                    LEFT JOIN flag medpsychflag ON (s.ID=medpsychflag.SessionID AND medpsychflag.Test_name='med_psych_hist' AND medpsychflag.Administration='All' AND medpsychflag.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', medpsychflag.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=medpsychflag.CommentID OR cu.CommentId2=medpsychflag.CommentID) )
+                    LEFT JOIN flag neuroscreenflag ON (s.ID=neuroscreenflag.SessionID AND neuroscreenflag.Test_name='neuro_screen' AND neuroscreenflag.Administration='All' AND neuroscreenflag.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', neuroscreenflag.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=neuroscreenflag.CommentID OR cu.CommentId2=neuroscreenflag.CommentID))
+                    LEFT JOIN flag tsiflag ON (s.ID=tsiflag.SessionID AND tsiflag.Test_name='tsi' AND tsiflag.Administration='All' AND tsiflag.Data_entry='Complete' AND EXISTS (SELECT 'x' FROM flag df WHERE df.CommentID=CONCAT('DDE_', tsiflag.CommentID) AND df.Data_entry='Complete') AND NOT EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE cu.CommentId1=tsiflag.CommentID OR cu.CommentId2=tsiflag.CommentID) )
+                    -- The instrument tables themselves..
+                    LEFT JOIN audiology aud ON (audflag.CommentID=aud.CommentID)
+                    LEFT JOIN med_psych_hist medpsych ON (medpsychflag.CommentID=medpsych.CommentID)
+                    LEFT JOIN neuro_screen neuroscreen ON (neuroscreenflag.CommentID=neuroscreen.CommentID)
+                    LEFT JOIN tsi tsi ON (tsiflag.CommentID=tsi.CommentID)
+
+                    WHERE " . $ndar->getWhere());
+        //$this->CommonCandidateFields . ' i.Date_taken, ' . $fields);
+        //$ndar = new NDAR_Release_Partial('charge');
+        $results = $ndar->process(
+            array(0 => array(
+            // Common fields
+            'IBISID' => "IBIS", 'Visit_label' =>"V06", 'Site' => "3", 'Cohort' => "High Risk",
+            // Audiology fields
+            'Audiology_Date_taken' => '2004-04-04', 'Audiology_Candidate_Age' => '34.3', 
+            'test_results' => 'abc',
+            // Med Psych hist fields
+            'Med_Psych_Hist_Date_Taken' => '2005-04-04', 'Med_Psych_Hist_Candidate_Age' => '34.22',
+            'q16_has_child_ever' => 'yes', 'q15_c_fever_seizures' => 'no', 
+            'q15_seizures_convulsions' => 'no', 'q17_birth_defects' => 'hello',
+            // Neuroscreen fields
+            'Neuroscreen_Date_Taken' => '2005-04-02', 'Neuroscreen_Candidate_Age' => '33.2', 
+            'q19_other_physical_abnormalities' => 'yes', 'q1_strabismus' => 'yes', 
+            'q6_ear_formation' => 'yes',
+            // TSI fields
+            'TSI_Date_Taken' => '2005-10-11', 'TSI_Candidate_Age' => '34', 
+            'med_his_q_5_medications' => 'yes', 'med_his_q_5_medications_describe' => 'yes', 
+            'med_his_q_8_brain_MRI_results' => 'yes', 'congenital_heart_problems' => 'yes', 
+            'med_his_q_6_allergies' => 'yes', 'med_his_q_6_allergies_describe' => 'yes'
+        )));
+        $this->assertEqual($results, array(0 => array(
+            // Common fields
+            'IBISID' => "IBIS", 'Visit_label' =>"V06", 'Site' => "3", 'Cohort' => "High Risk",
+            // Audiology fields
+            'Audiology_Date_taken' => '04/01/2004', 'Audiology_Candidate_Age' => '34.3', 
+            'test_results' => 'abc',
+            // Med Psych hist fields
+            'Med_Psych_Hist_Date_Taken' => '04/01/2005', 'Med_Psych_Hist_Candidate_Age' => '34.22',
+            'q16_has_child_ever' => 'yes', 'q15_c_fever_seizures' => 'no', 
+            'q15_seizures_convulsions' => 'no', 'q17_birth_defects' => 'hello',
+            // Neuroscreen fields
+            'Neuroscreen_Date_Taken' => '04/01/2005', 'Neuroscreen_Candidate_Age' => '33.2', 
+            'q19_other_physical_abnormalities' => 'yes', 'q1_strabismus' => 'yes', 
+            'q6_ear_formation' => 'yes',
+            // TSI fields
+            'TSI_Date_Taken' => '10/01/2005', 'TSI_Candidate_Age' => '34', 
+            'med_his_q_5_medications' => 'yes', 'med_his_q_5_medications_describe' => 'yes', 
+            'med_his_q_8_brain_MRI_results' => 'yes', 'congenital_heart_problems' => 'yes', 
+            'med_his_q_6_allergies' => 'yes', 'med_his_q_6_allergies_describe' => 'yes'
+        ))
+        );
     }
 }
