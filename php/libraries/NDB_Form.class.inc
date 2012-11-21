@@ -102,7 +102,7 @@ class NDB_Form extends PEAR
         $obj->identifier = $identifier;
         
         $access = $obj->_hasAccess();
-        if (PEAR::isError($access)) {
+        if (Utility::isErrorX($access)) {
             return PEAR::raiseError("NDB_Form::factory() access: ".$access->getMessage());
         }
 
@@ -113,14 +113,14 @@ class NDB_Form extends PEAR
 
  	    if (method_exists($obj, $page)) {
 	        $success = $obj->$page();
-            if (PEAR::isError($success)) {
+            if (Utility::isErrorX($success)) {
                 return PEAR::raiseError("NDB_Form::factory() page: ".$success->getMessage());
             }
             $obj->template = $page;
 	    }
  	    elseif (method_exists($obj, $name)) {
 	        $success = $obj->$name();
-            if (PEAR::isError($success)) {
+            if (Utility::isErrorX($success)) {
                 return PEAR::raiseError("NDB_Form::factory() name: ".$success->getMessage());
             }
             $obj->template = $name;
@@ -140,7 +140,7 @@ class NDB_Form extends PEAR
      *
      *     // create user object
      *     $user =& User::singleton();
-     *     if(PEAR::isError($user)) {
+     *     if(Utility::isErrorX($user)) {
      *         return PEAR::raiseError("User Error: ".$user->getMessage());
      *     }
      *
@@ -175,7 +175,7 @@ class NDB_Form extends PEAR
 
         // get the defaults
         $localDefaults = $this->_getDefaults();
-        if (PEAR::isError($localDefaults)) {
+        if (Utility::isErrorX($localDefaults)) {
             return PEAR::raiseError("NDB_Form::display(): ".$localDefaults->getMessage());
         }
         if(!is_array($localDefaults)) { $localDefaults = array(); }
@@ -224,7 +224,7 @@ class NDB_Form extends PEAR
     {
         if ($this->form->validate()) {
             $success = $this->form->process(array(&$this, "_save"), false);
-            if (PEAR::isError($success)) {
+            if (Utility::isErrorX($success)) {
                 return PEAR::raiseError("NDB_Form::save(): ".$success->getMessage());
             }
         }
@@ -250,7 +250,7 @@ class NDB_Form extends PEAR
         }
 
         $success = $this->_process($values);
-        if (PEAR::isError($success)) {
+        if (Utility::isErrorX($success)) {
             return PEAR::raiseError("NDB_Form::_save(): ".$success->getMessage());
         }
     }
