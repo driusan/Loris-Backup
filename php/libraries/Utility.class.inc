@@ -310,7 +310,7 @@ class Utility extends PEAR
      * @access public
      * @static
      */
-    function getCleanString($string)
+    static function getCleanString($string)
     {
         $string = trim($string);
         $string = str_replace('  ', ' ', $string);
@@ -468,7 +468,7 @@ class Utility extends PEAR
     //toArray ensures that $var is a collection of $var elements, not just a single element
     //If this makes no sense to you, examine the way the xml parser deals with multiple elements of the same name.
     //Note: This does not change a string into an array with one string element
-    function toArray($var){
+    static function toArray($var){
         if(!isset($var[0])) {
             $var = array($var);
         }
@@ -736,6 +736,15 @@ class Utility extends PEAR
 		}
 		return $test_names;
 	}
+
+    // This function guards access to _REQUEST so that
+    // PHP doesn't throw errors if $field is not defined
+    static function GetRequestParam($field) {
+        if(isset($_REQUEST[$field])) {
+            return $_REQUEST[$field];
+        }
+        return null;
+    }
 
 }
 ?>

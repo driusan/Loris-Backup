@@ -86,7 +86,7 @@ class NDB_Client
             $login = new SinglePointLogin();
             $_SESSION['State']->setProperty('login', $login);
         } else {
-            $login =& $_SESSION['State']->getProperty('login');
+            $login = $_SESSION['State']->getProperty('login');
         }
         if (!$login->isLoggedIn()) {
             $auth = $login->authenticate();

@@ -60,7 +60,10 @@ class Database extends PEAR
         if(is_null($database) && is_null($username) && is_null($password) && is_null($host)) {
             if(!empty($connections)) {
                 reset($connections);
-                return current($connections);
+                // Function singleton returns by reference, so it needs
+                // to return a variable.
+                $connection = current($connections);
+                return $connection;
             } else {
                 return PEAR::raiseError('No database connection exists');
             }

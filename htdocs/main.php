@@ -27,11 +27,11 @@ $timer->setMarker('Loaded client');
 //--------------------------------------------------
 
 // set URL params
-$tpl_data['test_name'] = $_REQUEST['test_name']; 
-$tpl_data['subtest']   = $_REQUEST['subtest'];
-$tpl_data['candID']    = $_REQUEST['candID'];
-$tpl_data['sessionID'] = $_REQUEST['sessionID'];
-$tpl_data['commentID'] = $_REQUEST['commentID'];
+$tpl_data['test_name'] = Utility::GetRequestParam('test_name');
+$tpl_data['subtest']   = Utility::GetRequestParam('subtest');
+$tpl_data['candID']    = Utility::GetRequestParam('candID');
+$tpl_data['sessionID'] = Utility::GetRequestParam('sessionID');
+$tpl_data['commentID'] = Utility::GetRequestParam('commentID');
 
 // study title
 $tpl_data['study_title'] = $config->getSetting('title');
@@ -71,9 +71,7 @@ foreach(Utility::toArray($mainMenuTabs['tab']) AS $myTab){
 
         // if there are no permissions, allow access to the tab
         if (!is_array($myTab['permissions']) || count($myTab['permissions'])==0) {
-            
             $tpl_data['tabs'][]=$myTab;
-            
         } else {
 
             // if any one permission returns true, allow access to the tab
@@ -233,7 +231,7 @@ function HandleError($error) {
     }
 }
 $caller->setErrorHandling(PEAR_ERROR_CALLBACK, 'HandleError');
-$workspace = $caller->load($_REQUEST['test_name'], $_REQUEST['subtest']);
+$workspace = $caller->load(Utility::GetRequestParam('test_name'), Utility::GetRequestParam('subtest'));
 if (Utility::isErrorX($workspace)) {
     $tpl_data['error_message'][] = $workspace->getMessage();
 } else {
@@ -266,7 +264,12 @@ $tpl_data['lastURL'] = $_SESSION['State']->getLastURL();
 //Display the links, as specified in the config file
 $links=$config->getSetting('links');
 foreach(Utility::toArray($links['link']) AS $link){
-	$tpl_data['links'][]=array('url'=>$link['@']['url'] . $link_args[$link['@']['args']], 'label'=>$link['#'], 'windowName'=>md5($link['@']['url'])); 
+    $link_args = isset($link['@']['args']) ?  $link_args[$link['@']['args']] : '';
+    $tpl_data['links'][]=array(
+        'url'=> $link['@']['url'] . $link_args,
+            'label'=>$link['#'],
+            'windowName'=>md5($link['@']['url'])
+        );
 }
 
 

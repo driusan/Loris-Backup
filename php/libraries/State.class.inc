@@ -89,11 +89,11 @@ class State
         'mri_safety'
         );
         $caller =& NDB_Caller::singleton();
-        if ($_REQUEST['test_name'] == 'timepoint_list') {
+        if (Utility::GetRequestParam('test_name') == 'timepoint_list') {
             return 'main.php?test_name=candidate_list';
         } elseif (!empty($_REQUEST['candID']) && in_array($_REQUEST['test_name'], $timepointSubMenus)) {
             return 'main.php?test_name=timepoint_list&candID='.$_REQUEST['candID'];
-        } elseif ($caller->type == 'instrument' || $_REQUEST['test_name'] == 'next_stage') {
+        } elseif ($caller->type == 'instrument' || Utility::GetRequestParam('test_name') == 'next_stage') {
             return 'main.php?test_name=instrument_list&candID='.$_REQUEST['candID'].'&sessionID='.$_REQUEST['sessionID'];
         }
 
