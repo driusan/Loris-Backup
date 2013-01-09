@@ -695,31 +695,41 @@ class Utility extends PEAR
 	
 	
 		
-	/**
+/**
 	 * *
 	 * get all the instruments for the given visit...
 	 * @param unknown_type $visit
 	 * @return unknown
 	 */
 	function getVisitInstruments($visit_label){
-		$DB =& Database::singleton();
-	
-		if (Utility::ColumnExists('test_battery', 'Test_name_display')) {
-			$test_names = $DB->pselect("SELECT distinct Test_name_display from test_battery where Visit_label =:vl",array('vl'=>$visit_label));
-		} else {
-			 $test_names= $DB->pselect("SELECT DISTINCT t.Full_name as Test_name_display FROM session s
-			JOIN candidate c ON (c.candid=s.candid)
-			JOIN psc ON (s.CenterID = psc.CenterID)
-			JOIN flag f ON (f.sessionid=s.id)
-			JOIN test_names t ON (f.test_name=t.Test_name)
-			WHERE c.Active='Y' AND s.Active='Y' AND s.Visit_label =:vl AND psc.CenterID != '1' AND c.PSCID != '%scanner%' ORDER BY t.Full_name ",array('vl'=>$visit_label));
-		}
-		
-		if (PEAR::isError($test_names)) {
-			return PEAR::raiseError("DB Error: ".$instruments->getMessage());
-		}
-		return $test_names;
-	}
+        $DB =& Database::singleton();
+        $set = array();
+        $query ="";
+        if (Utility::ColumnExists('test_battery', 'Test_name_display')) {
+            $test_names = $DB->pselect("SELECT distinct Test_name_display from test_battery where Visit_label =:vl",array('vl'=>$visit_label));
+        } else {
+
+            $query = "SELECT DISTINCT t.Full_name as Test_name_display FROM session s
+            JOIN candidate c ON (c.candid=s.candid)
+            JOIN psc ON (s.CenterID = psc.CenterID)
+            JOIN flag f ON (f.sessionid=s.id)
+            JOIN test_names t ON (f.test_name=t.Test_name)";
+
+            $where = " WHERE c.Active='Y' AND s.Active='Y' AND psc.CenterID != '1' AND c.PSCID != '%scanner%'";
+            $order_by = " ORDER BY t.Full_name ";
+
+            if ($visit_label!==null){
+                $where .= " AND s.Visit_label =:vl";
+                $set['vl'] = $visit_label;
+            }
+            $test_names= $DB->pselect($query . $where . $order_by, $set);
+        }
+
+        if (PEAR::isError($test_names)) {
+            return PEAR::raiseError("DB Error: ".$instruments->getMessage());
+        }
+        return $test_names;
+    }
 
 }
 ?>
