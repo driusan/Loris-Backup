@@ -718,7 +718,7 @@ class Utility extends PEAR
             $where = " WHERE c.Active='Y' AND s.Active='Y' AND psc.CenterID != '1' AND c.PSCID != '%scanner%'";
             $order_by = " ORDER BY t.Full_name ";
 
-            if ($visit_label!==null){
+            if ($visit_label!==null && $visit_label!=''){
                 $where .= " AND s.Visit_label =:vl";
                 $set['vl'] = $visit_label;
             }
