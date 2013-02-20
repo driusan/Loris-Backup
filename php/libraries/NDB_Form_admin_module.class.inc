@@ -63,14 +63,15 @@ class NDB_Form_admin_module extends NDB_Form
     {
         $DB =& Database::singleton();
         $new_config;
-        $config_list = $DB->pselect("SELECT c.ID, c.Value, cc.Description, cc.Name FROM Config c
+        $config_list = $DB->pselect("SELECT cc.Parent,c.ID, c.Value, cc.Description, cc.Name FROM Config c
                 JOIN ConfigSettings cc ON (cc.ID = c.ID)",array());
         print_r($config_list);
         foreach($config_list as $config){
             $this->tpl_data['config_list'][] = $config['ID'];
-            $this->tpl_data['conflig_elements'][$config['ID']]['Value']= $config['Value'];
-            $this->tpl_data['conflig_elements'][$config['ID']]['Description']= $config['Description'];
-            $this->tpl_data['conflig_elements'][$config['ID']]['Name']= $config['Name'];
+            $this->tpl_data['config_elements'][$config['ID']]['Parent']= $config['Parent'];
+            $this->tpl_data['config_elements'][$config['ID']]['Value']= $config['Value'];
+            $this->tpl_data['config_elements'][$config['ID']]['Description']= $config['Description'];
+            $this->tpl_data['config_elements'][$config['ID']]['Name']= $config['Name'];
         }
     }
 }
