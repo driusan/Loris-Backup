@@ -99,6 +99,29 @@ class NDB_Config
     function getSetting($name)
     {
         
+        if(class_exists("Database")) {
+            $db = Database::singleton();
+            
+            if(!PEAR::isError($db) && $db->isConnected() === true) {
+				
+                $dbval = $db->pselect("SELECT c.Value, cs.ID FROM ConfigSettings cs LEFT JOIN Config c ON (cs.ID=c.ConfigID) WHERE Name=:nm", array("nm" => $name));
+                if(count($dbval) > 0) {
+                	//if there are childs
+                    if (($db->pselectOne("SELECT COUNT(*) FROM ConfigSettings WHERE Parent = :pt",array('pt'=>$dbval[0]['ID']))) > 0){
+                		$ret = array();    	
+                		$children = $db->pselect("SELECT c.Value, cs.Name FROM ConfigSettings cs LEFT JOIN Config c ON (cs.ID=c.ConfigID) WHERE Parent=:pt", array('pt'=>$dbval[0]['ID']));		
+                		foreach($children as $row) {
+                			$ret[$row['Name']] = $row['Value'];
+                		}
+                		return $ret;
+                    }
+                    return $dbval[0]['Value'];
+                }
+            } 
+        }
+
+        // nothing in the database, so get the value from config.xml
+
         // if we know the user
         if(class_exists("User") && isset($_SESSION['State'])) {
             if(empty($this->_siteSettings)) {
