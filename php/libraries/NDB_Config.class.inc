@@ -103,9 +103,18 @@ class NDB_Config
             $db = Database::singleton();
             
             if(!PEAR::isError($db) && $db->isConnected() === true) {
-
-                $dbval = $db->pselect("SELECT c.Value FROM ConfigSettings cs LEFT JOIN Config c ON (cs.ID=c.ConfigID) WHERE Name=:nm", array("nm" => $name));
+				
+                $dbval = $db->pselect("SELECT c.Value, cs.ID FROM ConfigSettings cs LEFT JOIN Config c ON (cs.ID=c.ConfigID) WHERE Name=:nm", array("nm" => $name));
                 if(count($dbval) > 0) {
+                	//if there are childs
+                    if (($db->pselectOne("SELECT COUNT(*) FROM ConfigSettings WHERE Parent = :pt",array('pt'=>$dbval[0]['ID']))) > 0){
+                		$ret = array();    	
+                		$children = $db->pselect("SELECT c.Value, cs.Name FROM ConfigSettings cs LEFT JOIN Config c ON (cs.ID=c.ConfigID) WHERE Parent=:pt", array('pt'=>$dbval[0]['ID']));		
+                		foreach($children as $row) {
+                			$ret[$row['Name']] = $row['Value'];
+                		}
+                		return $ret;
+                    }
                     return $dbval[0]['Value'];
                 }
             } 
