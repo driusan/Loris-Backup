@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<config>
+    <study>
+       <Certification>
+           <EnableCertification>1</EnableCertification>
+           <CertificationProjects>
+               <CertificationProject>1</CertificationProject>
+               <CertificationProject>2</CertificationProject>
+           </CertificationProjects>
+           <CertificationInstruments>
+              <!--    <test value="aims">AIMS</test>-->
+              <test value="aosi">AOSI</test>
+              <test value="csbs">CSBS</test>
+              <test value="test">Test Instrument</test>
+
+           </CertificationInstruments>
+       </Certification>
+    </study>
+</config>

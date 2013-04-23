@@ -629,7 +629,7 @@ class NDB_BVL_Instrument extends NDB_Page
     // This is put in a different function so that instruments that
     // override getExaminerNames() can still easily get the config
     // settings and don't need to parse the config file themselves.
-    function _getCertificationConfig() {
+    static function _getCertificationConfig() {
         $config =& NDB_Config::singleton();
         $CertificationConfig = $config->getSetting("Certification");
         $CertificationEnabled = $CertificationConfig['EnableCertification'];
