@@ -14,7 +14,7 @@
  *
  */
 require_once 'LorisTest.php';
-require_once("NDB_BVL_Instrument.class.inc");
+require_once "NDB_BVL_Instrument.class.inc";
 
 /**
  * Class to implement test for certification
@@ -39,11 +39,16 @@ class TestOfCandidateList extends LorisTest
         $config->load(__DIR__ . "/../fixtures/CertificationSingle.xml");
         $settings = $config->getSetting("Certification");
 
-        $this->assertEqual($settings['EnableCertification'], "1", "Didn't load certification properly");
-        // getCertificationConfig isn't static, so we need an instance.
+        // Start with a basic check that the right config file is loading
+        $this->assertEqual(
+            $settings['EnableCertification'],
+            "Zebra",
+            "Didn't load proper config file"
+        );
+        // getCertif
         list($CertificationEnabled, $CertificationProjects, $CertificationInstruments)
             = NDB_BVL_Instrument::_getCertificationConfig();
-        $this->assertEqual($CertificationEnabled, "1", "Didn't load enabled properly");
+        $this->assertEqual($CertificationEnabled, "Zebra", "Didn't load enabled properly");
         $this->assertEqual($CertificationProjects, array(2), "Didn't load projects properly");
         $this->assertEqual($CertificationInstruments, array("aosi"), "Didn't load instruments properly");
 

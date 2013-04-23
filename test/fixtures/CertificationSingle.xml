@@ -3,7 +3,7 @@
 <config>
     <study>
        <Certification>
-           <EnableCertification>1</EnableCertification>
+           <EnableCertification>Zebra</EnableCertification>
            <CertificationProjects>
                <CertificationProject>2</CertificationProject>
            </CertificationProjects>
