@@ -26,7 +26,6 @@ $test->addFile('tests/CoreFunctionality.php');
 $test->addFile('tests/NewProfile.php');
 $test->addFile('tests/FinalRadiologicalReview.php');
 $test->addFile('tests/CandidateList.php');
-$test->addFile('tests/FinalRadiologicalReview.php');
 $test->addFile('tests/Certification.php');
 // Project specific tests..
 //$test->addFile('tests/SiteSpecific.php');

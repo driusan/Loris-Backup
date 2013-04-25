@@ -25,7 +25,7 @@ require_once "NDB_BVL_Instrument.class.inc";
  *  @license  Loris license
  *  @link     http://www.loris.ca
  */
-class TestOfCandidateList extends LorisTest
+class TestOfCertificationConfig extends LorisTest
 {
 
     /**
