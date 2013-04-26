@@ -181,15 +181,17 @@ foreach($instruments AS $instrument){
                     $bits[0]="varchar(255)";
                 }
 
-print "Inserting $table $bits[1]\n";
                 $parameterCount++;
                 $bits[2]=htmlspecialchars($bits[2]);
                 //find values to insert
+                if(empty($bits[1])) {
+                    print "Empty field for $table. Not inserting.\n";
+                    continue;
+                }
+                print "Inserting $table $bits[1]\n";
                 $Name = (array_key_exists($table, $abbreviations) ? $abbreviations[$table] : $table ) . "_" . $bits[1];
                 $ParameterTypeID = array_key_exists($Name, $parameter_types) ? $parameter_types[$Name] : '';
-                $error=$DB->insert("parameter_type", array('ParameterTypeID'=>$ParameterTypeID,'Name'=>$Name, 'Type'=>$bits[0], 'Description'=>$bits[2], 'SourceField'=>$bits[1], 'SourceFrom'=>$table, 'CurrentGUITable'=>'quat_table_' . ceil(($parameterCount  - 0.5) / 200), 'Queryable'=>'1')); //500 Instrument parameters per quat_table
-//                $error=$DB->insert("parameter_type", array('Name'=>(array_key_exists($table, $abbreviations) ? $abbreviations[$table] : $table ) . "_" . $bits[1], 'Type'=>$bits[0], 'Description'=>$bits[2], 'SourceField'=>$bits[1], 'SourceFrom'=>$table, 'CurrentGUITable'=>'quat_table_' . ceil(($parameterCount  - 0.5) / 500), 'Queryable'=>'1')); //500 Instrument parameters per quat_table
-                print_r($error);
+                $error=$DB->insert("parameter_type", array('ParameterTypeID'=>$ParameterTypeID,'Name'=>$Name, 'Type'=>$bits[0], 'Description'=>$bits[2], 'SourceField'=>$bits[1], 'SourceFrom'=>$table, 'CurrentGUITable'=>'quat_table_' . ceil(($parameterCount  - 0.5) / 200), 'Queryable'=>'1'));
                 if($ParameterTypeID === '') {
                     $paramId= $DB->lastInsertID;
                 } else {
