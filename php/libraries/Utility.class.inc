@@ -35,7 +35,7 @@ class Utility extends PEAR
      * @return string
      * @access public
      */
-    function unparse_str ($params) {
+    static function unparse_str ($params) {
         $str = '';
         foreach ($params as $key => $value) {
             if(is_array($value)) {
@@ -259,7 +259,7 @@ class Utility extends PEAR
      * @access public
      * @static
      */
-    function getSubprojectList()
+    static function getSubprojectList()
     {
         $config =& NDB_Config::singleton();
 
@@ -271,7 +271,7 @@ class Utility extends PEAR
         return $list;
     }
     
-    function getProjectList() {
+    static function getProjectList() {
         $config =& NDB_Config::singleton();
 
         // get the list of Subprojects
@@ -310,7 +310,7 @@ class Utility extends PEAR
      * @access public
      * @static
      */
-    function getCleanString($string)
+    static function getCleanString($string)
     {
         $string = trim($string);
         $string = str_replace('  ', ' ', $string);
@@ -409,7 +409,7 @@ class Utility extends PEAR
      * @static
      * @access public
      */
-    function array_merge_recursive_overwriting($array1, $array2, &$merged_array=null)
+    static function array_merge_recursive_overwriting($array1, $array2, &$merged_array=null)
     {
         if (empty($merged_array)) $merged_array = $array1;
         foreach ($array2 AS $key=>$value) {
@@ -470,7 +470,7 @@ class Utility extends PEAR
     //toArray ensures that $var is a collection of $var elements, not just a single element
     //If this makes no sense to you, examine the way the xml parser deals with multiple elements of the same name.
     //Note: This does not change a string into an array with one string element
-    function toArray($var){
+    static function toArray($var){
         if(!isset($var[0])) {
             $var = array($var);
         }
@@ -479,7 +479,7 @@ class Utility extends PEAR
     
     //asArray ensures that $var is a collection elements, not just a single element
     //Not the same as toArray, apparently.
-    function asArray($var){
+    static function asArray($var){
         if(!is_array($var)) {
             return array($var);
         }
