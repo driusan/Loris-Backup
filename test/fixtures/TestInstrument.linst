@@ -1,0 +1,16 @@
+table{@}TestInstrument
+title{@}Test Instrument
+date{@}Date_taken{@}Date of Administration{@}2006{@}2012
+static{@}Candidate_Age{@}Candidate Age (Months)
+static{@}Window_Difference{@}Window Difference (+/- Days)
+select{@}Examiner{@}Examiner{@}NULL=>''
+date{@}AnotherDate_date{@}This is a date{@}1900{@}1903
+select{@}AnotherDate_date_status{@}{@}NULL=>''{-}'not_answered'=>'Not Answered'
+select{@}q1{@}This is a question{@}NULL=>''{-}'yes'=>'Yes'{-}'no'=>'No'{-}'not_answered'=>'Not Answered'
+select{@}q2{@}This is a question{@}NULL=>''{-}'yes'=>'Yes'{-}'no'=>'No'{-}'not_answered'=>'Not Answered'
+text{@}text_q{@}This is a textbox
+select{@}text_q_status{@}{@}NULL=>''{-}'not_answered'=>'Not Answered'
+textarea{@}textarea_q{@}This is a textarea
+select{@}textarea_q_status{@}{@}NULL=>''{-}'not_answered'=>'Not Answered'
+numeric{@}numeric_q{@}This is numeric{@}3{@}6
+select{@}numeric_q_status{@}{@}NULL=>''{-}'not_answered'=>'Not Answered'

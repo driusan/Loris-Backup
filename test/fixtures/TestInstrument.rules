@@ -1,0 +1,9 @@
+table{@}TestInstrument
+title{@}Test Instrument
+date{@}Date_taken{@}Date of Administration{@}2006{@}2012
+static{@}Candidate_Age{@}Candidate Age (Months)
+static{@}Window_Difference{@}Window Difference (+/- Days)
+select{@}Examiner{@}Examiner{@}NULL=>''
+header{@}{@}Header
+date{@}AnotherDate{@}This is a date field{@}2007{@}2012
+select{@}q1{@}Do you like the wording of this question?{@}NULL=>''{-}'yes'=>'Yes'{-}'no'=>'No'{-}'not_answered'=>'Not Answered'

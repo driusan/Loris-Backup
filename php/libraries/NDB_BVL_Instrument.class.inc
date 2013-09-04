@@ -1,4 +1,6 @@
 <?php
+require_once 'Database.class.inc';
+require_once 'NDB_Config.class.inc';
 require_once 'NDB_Page.class.inc';
 require_once "PEAR.php";
 require_once "HTML/QuickForm.php";
@@ -906,7 +908,8 @@ class NDB_BVL_Instrument extends NDB_Page
                 // dealing with _status==not_answered easier, because the rules for
                 // enforcing range are independent of the rules for enforcing
                 // required.
-                if ($this->LinstQuestions[$elname]['type'] === 'numeric') {
+                if (isset($this->LinstQuestions[$elname]) &&
+                    $this->LinstQuestions[$elname]['type'] === 'numeric') {
                     // Cast everything to a double so that < and > work as
                     // expected
                     $value = doubleval($elements[$elname]);
@@ -935,6 +938,7 @@ class NDB_BVL_Instrument extends NDB_Page
                         }
                     }
                 }
+
                 if(!empty($this->XINRules[$elname])) {
                     $registered_rules = $this->XINRules[$elname];
                     if($this->XINDebug){echo "<p><b>$elname</b><br> ";} //debugging code
@@ -1073,6 +1077,7 @@ class NDB_BVL_Instrument extends NDB_Page
     //meaning the answer is valid.
     //DONT TOUCH THIS, EVER.
     function XINRunElementRules($elname, $elements, $rules){
+        $errors = array();
         $is_required=true; //Conditions for the rule to be true, and thus the element to be required.
         foreach($rules['rules'] AS $rule){  //Loop through the assigned rules (which is the array of formatted statements passed in XINRegisterRule)
             //If this is an OR rule using two different controllers explode it at the pipe.  ex: q_1{@}=={@}yes|q_2{@}=={@}yes
@@ -1270,8 +1275,8 @@ class NDB_BVL_Instrument extends NDB_Page
     * @param    array   $refusals   options in the refusal select (ie. Refusal, Unknown, Not Answered).
     */
     function addTextElement($field, $label, $rules=array(), $rule_message='This field is required.', $refusals=array(''=>'', 'not_answered'=>'Not Answered')){
-        $group[]=&$this->createText($field);
-        $group[]=&$this->createSelect($field."_status", "", $refusals);
+        $group[]= $this->createText($field);
+        $group[]= $this->createSelect($field."_status", "", $refusals);
         $this->addGroup($group, $field.'_group', $label, null, false);
         unset($group);
         $rules_array=array_merge(array($field.'_status{@}=={@}'), $rules);
@@ -1301,8 +1306,9 @@ class NDB_BVL_Instrument extends NDB_Page
     
 
     function addTextAreaElement($field, $label, $rules=array(), $rule_message='This field is required.'){
-        $group[]=&$this->form->createElement("textarea", $field, null, array('cols'=>25, 'rows'=>4));
-        $group[]=&$this->createSelect($field."_status", "", array(NULL=>'', 'not_answered'=>'Not Answered'));
+        $group = array();
+        $group[]= $this->form->createElement("textarea", $field, null, array('cols'=>25, 'rows'=>4));
+        $group[]= $this->createSelect($field."_status", "", array(NULL=>'', 'not_answered'=>'Not Answered'));
         $this->addGroup($group, $field.'_group', $label, null, false);
         unset($group);
         $rules_array=array_merge(array($field.'_status{@}=={@}'),$rules);
@@ -1487,7 +1493,11 @@ class NDB_BVL_Instrument extends NDB_Page
             $this->InstrumentType = 'LINST';
             $db = Database::singleton();
             $this->dateTimeFields = array("Date_taken");
-            $this->form = new HTML_Quickform('test_form');
+
+            if(!isset($this->form)) {
+                $this->form = new HTML_Quickform('test_form');
+            }
+
             $this->formType='XIN';
             $this->form->addFormRule(array(&$this,'XINValidate'));
             $fp = fopen($filename, "r");
@@ -1581,10 +1591,10 @@ class NDB_BVL_Instrument extends NDB_Page
                         if ($addElements) {
                             $options = array();
                             if (!empty($pieces[3])) {
-                                $options['min'] = $pieces[3];
+                                $options['min'] = trim($pieces[3]);
                             }
                             if (!empty($pieces[4])) {
-                                $options['max'] = $pieces[4];
+                                $options['max'] = trim($pieces[4]);
                             }
                             $this->addNumericElement($pieces[1], $pieces[2], $options);
                         }

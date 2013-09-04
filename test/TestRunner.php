@@ -22,11 +22,16 @@ $test = new TestSuite('Core LORIS tests');
 // Generally test functionality. Database class, permissions,
 // instruments save
 $test->addFile('tests/CoreFunctionality.php');
-// Test individual components
+
+
+// Test individual components through the browser
 $test->addFile('tests/NewProfile.php');
 $test->addFile('tests/FinalRadiologicalReview.php');
 $test->addFile('tests/CandidateList.php');
 $test->addFile('tests/TimePointList.php');
+
+// Test that instrument builder files load correctly
+$test->addFile('tests/InstrumentBuilder.php');
 
 // Project specific tests..
 //$test->addFile('tests/SiteSpecific.php');
