@@ -28,6 +28,9 @@
     <extLibs>/PATH/TO/SMARTY/libs</extLibs>
     <mincPath></mincPath>
     <log>tools/logs/</log>
+    <IncomingPath>/data/incoming/gusto/</IncomingPath>
+    <MRICodePath>/data/gusto/bin/mri/</MRICodePath>
+
 </paths>
 
 <!-- database settings -->
