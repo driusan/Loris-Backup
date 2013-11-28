@@ -293,6 +293,15 @@
         <ConflictResolver>
             <MaxConflicts>500</MaxConflicts>
         </ConflictResolver>
+         <tab>
+          <link>mri_upload</link>
+          <label>MRI Uploader</label>
+          <access>all</access>
+          <permissions>
+          <!--perm>violated_scans</perm-->
+          </permissions>
+          <visible>1</visible>
+        </tab>
 
 </main_menu_tabs>
 
