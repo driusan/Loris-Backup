@@ -74,8 +74,6 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
 
         $this->log= new Log("MRI_upload", "/data/gusto/data/logs/");
 
-
-
         return true;
     }
 
@@ -100,7 +98,7 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
         /////////////////////////////////////////////////////////////
         $this->addBasicText('CandID', 'CandID:');
         $this->addBasicText('PSCID', 'PSCID:');
-        $visitlabels = Utility::getAllVisits();
+        $visitlabels = Utility::getExistingVisitLabels();
         $this->addSelect('VisitLabel', 'VisitLabel:', $visitlabels);
         $new_files = array();
         $DB =& Database::singleton();
@@ -181,7 +179,7 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
                 "/\\.[^.\\s]{3,4}$/", "", $source_location
                 );
                 print "file-name : $file_name, file-name-wo-extension:
-            $file_name_without_exention and sourcelocation $source_location";
+                $file_name_without_exention and sourcelocation $source_location";
                 print "visitlabel $visit_label pscid: $pscid and candid : $candid";
 
                 ///////////////////////////////////////////////////////////////
@@ -200,14 +198,7 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
                 ///////////////////////////////////////////////////////////////////
 
                 ///if the candid, pscid, and visit_label are inserted
-                if ((!empty($candid)) && (!empty($pscid)) &&(!empty($visit_label))) {
-                    $success = $this->UpdateHeaderWithPatientName($DICOMTAR,$file_name_without_exention,$tarchive_location,$patient_id);
-                }
-                ///otherwise
-                else{
-                    $success = $this->UpdateHeaderWithoutPatientName($mri_header_executer,$mri_log_file,$file_name_without_exention,$file_name);
-                }
-
+                $success = $this->UpdateHeaderWithPatientName($DICOMTAR,$file_name_without_exention,$tarchive_location,$patient_id);
                 //////////////////////////////////////////////////////////////////////////////////
                 /////////////////////////set the tarchiveid and DicomInserted to true//////////////
                 ////////////////in mri_upload table////////////////////////////////////////////
@@ -220,7 +211,6 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
                     );
                     $this->tpl_data['dicom_success'] = true;
                 }
-
 
                 /////////////////////////////////////////////////////////////////////
                 ////////////////////////////////////////////////////////////////////
@@ -281,7 +271,7 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
         $file->registerForm($this->form);
 
         //Tell File_Upload what file handlers to use.
-        $file->setFileHandler("mri_file", &$this);
+        $file->setFileHandler("mri_file", $this);
 
         //Set the target directory that you want files moved
         //into once they are validated and processed.
@@ -322,16 +312,11 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
     {
 
         print_r($args);
-        //make sure the file-name is  valid
         /**
          * 1) The patient-name and the vist-label do exist...
          * 2) if not correct the user can input the correct name...
          * 3) Make sure it's not corrupted..
          * 
-         * 1) Ask them to use the database_based visit_labels:
-         * 6month instead of 6mth
-         * 6week or 6week_mri instead of 6wk
-         * MRIday instead of Neonatal
          * 
          * 2) Also have the file-name follow the 
          * XXXXXXXXX_XXXX_XXXXXXX  (format)
@@ -387,69 +372,37 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
                 )==0) {
                     $errors[] = "The VisitLabel: $visit_label Doesn't exist";
                 }
-        } else {
-            ////////////////////////////////////////////////////////////
-            /////////Make sure the file-name follows the convention/////
-            //////////i.e  KKH100111-04029_Neonatal/////////////////////
-            ////////////////////////////////////////////////////////////
-            $regex = "[a-zA-Z]{3}[0-9]{6}-[0-9]{5}_[a-zA-Z]*";
-            $withoutExt = preg_replace("/\\.[^.\\s]{3,4}$/", "", $file_name);
-
-            print "file without extension $withoutExt";
-            //KKH100111-04029_Neonatal
-            if (!(preg_match("/$regex/", $file_name))) {
-                $errors[]="Incorrect File-name, The Correct Folder Name should
-                be KKHdddddd_FamilyID_VisitLabel or NUHdddddd_FamilyID_VisitLabel";
-            }
-
-            ///////////////////////////////////////////////////////////////
-            /////////////////Make sure the Visit_label exists///////////////
-            ///////////////////////////////////////////////////////////////
-            print("without extension is $withoutExt");
-            list ($first, $visit_label)= split("_", $withoutExt);
-            $visit_label = $this->getProperVisitLabel($visit_label);
-            if ((!$this->VisitExists($visit_label)) || empty($visit_label)) {
-                $errors[] = "The $visit_label in the folder-name is not valid";
-            }
-
-            ////////////////////////////////////////////////////////////
-            ////////////////////////////Make sure the PSCID exist///////
-            //////////////////////////////////////////////////////////////
-            $family_id = $this->getFamilyIDUsingFileName($withoutExt);
-            print "family id is $family_id and visitlabel is $visit_label <BR>";
-
-
-            $pscid = $this->getPSCID($family_id);
-            if (is_null($pscid) || empty($pscid)) {
-                $errors[]=" The family id : $family_id in the folder-name is
-                not valid, since it has no corresponding PSCID";
-            }
-
-            /////////////////////////////////////////////////////////////////////
-            //////////////////Check to see if the dicom file is already//////////
-            //////////////////////////////inserted in the tarchive table/////////
-            //////////////////////////////////////////////////////////////////////
-
-            if (($db->pselectOne(
-            "SELECT COUNT(*) FROM tarchive WHERE patientname
-                LIKE concat ('%', :pname, '%') ",
-            array('pname'=>$family_id)
-            ))>0) {
-                $errors[]=" The Dicom file $file_name has already been inserted into
-                the tarchive table";
-            }
-            /////////////////////////////////////////////////////////////////////////
-            ////////Check to see if the file has already been uploaded or not////////
-            /////////////////////////////////////////////////////////////////////////
-
-            if (($db->pselectOne(
-            "SELECT COUNT(*) FROM mri_upload WHERE SourceLocation
-                LIKE concat ('%', :fname, '%') ",
-            array('fname'=>$file_name)
-            ))>0) {
-                $errors[]=" The file-name $file_name has already been uploaded";
-            }
         }
+        else{
+             $errors[] = "Make sure PSCID, CandID and VisitLabel are entered";
+
+        } 
+
+        /////////////////////////////////////////////////////////////////////
+        //////////////////Check to see if the dicom file is already//////////
+        //////////////////////////////inserted in the tarchive table/////////
+        //////////////////////////////////////////////////////////////////////
+
+       if (($db->pselectOne(
+        "SELECT COUNT(*) FROM tarchive WHERE patientname
+        LIKE concat ('%', :pname, '%') ",
+        array('pname'=>$family_id)
+       ))>0) {
+             $errors[]=" The Dicom file $file_name has already been inserted into
+             the tarchive table";
+       }
+       /////////////////////////////////////////////////////////////////////////
+       ////////Check to see if the file has already been uploaded or not////////
+       /////////////////////////////////////////////////////////////////////////
+
+       if (($db->pselectOne(
+         "SELECT COUNT(*) FROM mri_upload WHERE SourceLocation
+         LIKE concat ('%', :fname, '%') ",
+         array('fname'=>$file_name)
+       ))>0) {
+            $errors[]=" The file-name $file_name has already been uploaded";
+           }
+        
         if (count($errors) > 0) {
             return $errors;
         }
@@ -512,16 +465,6 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
             $pscid = $args['values']['PSCID'];
             $visit_label = $args['values']['VisitLabel'];
             print "visitlabel $visit_label pscid: $pscid and candid : $candid";
-        } else {
-            /////////////////////////////////////////////////////
-            /////////////////Use the File-name///////////////////////
-            /////////////////////////////////////////////////////
-            $family_id = $this->getFamilyIDUsingFileName($file->fileInfo['name']);
-            $pscid = $this->getPSCID($family_id);
-            $candid = Utility::convert_ssid_to_dcc($pscid);
-            list ($first, $visit_label)= split("_", $file->fileInfo['name']);
-            print "visit_label is $visit_label";
-            $visit_label = $this->getProperVisitLabel($visit_label);
         }
         $sessionid = $db->pselectOne(
         "SELECT ID FROM  session WHERE CandID = :cid AND Visit_label =:vlabel ",
@@ -533,59 +476,7 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
         $db->Insert('mri_upload', $values);
         return true;
     }
-    /**
-     * Set the front-end DataTable
-     *
-     * @param INT $count Number of existing fields
-     * 
-     * @return boolean
-     */
-    function _setDataTableRows($count)
-    {
-        $x = 0;
-        foreach ($this->list as $item) {
-            $this->tpl_data['items'][$x][0]['value'] = $x + $count;
-            $i = 1;
-            foreach ($item as $key => $val) {
-                $this->tpl_data['items'][$x][$i]['name'] = $key;
-                $this->tpl_data['items'][$x][$i]['value'] = $val;
 
-                $i++;
-            }
-            $x++;
-        }
-        return true;
-    }
-
-    /**
-     * Mapps the file-name visit_label to the 
-     * actual visit_label in the database
-     *
-     * @param STRING $visit THe visit_label
-     * 
-     * @return STRING
-     */
-    function getProperVisitLabel($visit)
-    {
-        $visit_label = $visit;
-        if (preg_match("/6wk/", $visit)) {
-            $visit_label = '6week_mri';
-        }
-
-        if (preg_match("/6mth/", $visit)) {
-            $visit_label = '6month';
-        }
-
-        if (preg_match("/6wk/", $visit)) {
-            $visit_label = '6week_mri';
-        }
-
-        if (preg_match("/Neonatal/", $visit)) {
-            $visit_label = 'MRIday';
-        }
-
-        return $visit_label;
-    }
 
     /**
      * Check to see if the given visit exists 
@@ -607,57 +498,6 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
         return true;
     }
 
-    /**
-     * Gets the PSCID using the family_id
-     * Family_id is a substring of the PSCID
-     *
-     * @param STRING $family_id the family_id
-     * 
-     * @return STRING
-     */
-    function getPSCID($family_id)
-    {
-        $db=& Database::singleton();
-        $pscid = $db->pselectOne(
-        "SELECT PSCID FROM candidate WHERE PSCID like concat ('%', :fid, '%')",
-        array('fid'=>$family_id)
-        );
-        return $pscid;
-    }
-
-    /**
-     * Gets the CandID using the family_id
-     * Family_id is a substring of the PSCID
-     *
-     * @param STRING $family_id the family_id
-     * 
-     * @return STRING
-     */
-
-    function getCandID($family_id)
-    {
-        $db=& Database::singleton();
-        $candid = $db->pselectOne(
-        "SELECT CandID FROM candidate WHERE PSCID like concat ('%', :fid, '%')",
-        array('fid'=>$family_id)
-        );
-        return $candid;
-    }
-
-
-    /**
-    * parses the file-name and extract the family-id
-    *
-    * @param STRING $fname the file-name
-    * 
-    * @return STRING
-    */
-    function getFamilyIDUsingFileName($fname)
-    {
-        list ($first, $visit_label)= split("_", $fname);
-        list ($first, $family_id)= split("-", $first);
-        return $family_id;
-    }
 
 
     /**
@@ -732,8 +572,7 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
     }
 
     /**
-     * Enter description here...
-     *
+     *      
      * @param String $DICOMTAR Path to Dicomtar.pl
      * @param String $file_name_without_exention Filename without extension
      * @param String $tarchive_location Path to where the tarchive folder
@@ -742,7 +581,7 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
      * @return Boolean True if successfully completed, otherwise false
      */
 
-    function UpdateHeaderWithPatientName($patient_name,$DICOMTAR,$file_name_without_exention,$tarchive_location,$patient_id)
+    function UpdateHeader($patient_name,$DICOMTAR,$file_name_without_exention,$tarchive_location,$patient_id)
     {
         $db=& Database::singleton();
         $cmd = "/usr/bin/perl $DICOMTAR $file_name_without_exention $tarchive_location"
@@ -804,61 +643,6 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
 
                     return false;
     }
-
-    /**
-     * Runs the Dicomtar.pl and updateheaders.pl using the patient-name
-     * extracted from the file-name. This option will only be used for GUSTO
-     * Since the folder-name includes the correct patient-name
-     * 
-     *
-     * @param String $mri_header_executer The path to the customize_header.pl script
-     * @param String $mri_log_file The path to the MRI log file
-     * @param String $file_name_without_exention The name of the file without extension
-     * @param String $file_name The file-name
-     * 
-     * @return Boolean True if successfully completed, otherwise false
-     */
-    function UpdateHeaderWithoutPatientName($mri_header_executer,$mri_log_file,$file_name_without_exention,$file_name){
-
-
-        $db=& Database::singleton();
-        $cmd = "/usr/bin/perl  $mri_header_executer"
-        . " $file_name_without_exention &>> $mri_log_file ";
-        $query = "/usr/bin/perl  $mri_header_executer"
-        . " $file_name_without_exention ";
-        print "query to be ran is $cmd";
-        print "-----------------------------";
-        print "<BR>";
-        //echo passthru($query);
-        $output = shell_exec($cmd);
-        print $output;
-        print "-----------------------------";
-        print "<BR>";
-        $family_id = $this->getFamilyIDUsingFileName($file_name);
-        $candid = $this->getCandID($family_id);
-        $row=$db->pselectRow(
-        "Select ArchiveLocation,TarchiveID,PatientName FROM tarchive \
-                    WHERE patientname LIKE concat ('%', :pname, '%') ",
-        array('pname'=>$family_id)
-        );
-        $tarchive_id = $row['TarchiveID'];
-        $ArchiveLocation = $row['ArchiveLocation'];
-
-        ////////////////////////////////////////////////////////////////////
-        /////////////////if successfully completed return true//////////////
-        ////////////////////////////////////////////////////////////////////
-
-        if ((!(preg_match("/not processed/", $output)))
-        && ($tarchive_id!=null)
-
-        ) {
-            return true;
-        }
-
-        return false;
-
-    }
-
 
 }
 
