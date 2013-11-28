@@ -198,7 +198,7 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
                 ///////////////////////////////////////////////////////////////////
 
                 ///if the candid, pscid, and visit_label are inserted
-                $success = $this->UpdateHeaderWithPatientName($DICOMTAR,$file_name_without_exention,$tarchive_location,$patient_id);
+                $success = $this->UpdateHeader($DICOMTAR,$file_name_without_exention,$tarchive_location,$patient_id);
                 //////////////////////////////////////////////////////////////////////////////////
                 /////////////////////////set the tarchiveid and DicomInserted to true//////////////
                 ////////////////in mri_upload table////////////////////////////////////////////
