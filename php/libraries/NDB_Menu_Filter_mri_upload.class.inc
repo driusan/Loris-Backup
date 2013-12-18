@@ -98,7 +98,8 @@ class NDB_Menu_Filter_Mri_Upload extends NDB_Menu_Filter_Form
         /////////////////////////////////////////////////////////////
         $this->addBasicText('CandID', 'CandID:');
         $this->addBasicText('PSCID', 'PSCID:');
-        $visitlabels = Utility::getExistingVisitLabels();
+        $visitlabels = array_merge(array(null=>''),Utility::getExistingVisitLabels());
+        
         $this->addSelect('VisitLabel', 'VisitLabel:', $visitlabels);
         $new_files = array();
         $DB =& Database::singleton();
