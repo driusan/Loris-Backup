@@ -1,6 +1,7 @@
 <?php
 require_once 'PEAR.php';
 require_once 'User.class.inc';
+require_once 'NDB_Menu.class.inc';
 
 /**
  * Caller class
@@ -66,69 +67,92 @@ class NDB_Caller extends PEAR
         $config =& NDB_Config::singleton();
         $base = $config->getSetting('base');
 
-        // it is a menu
-        if (empty($subtest) && ($this->existsAndRequire($base."project/libraries/NDB_Menu_$test_name.class.inc") 
-                             || $this->existsAndRequire($base."php/libraries/NDB_Menu_$test_name.class.inc") 
-                             || $this->existsAndRequire($base."project/libraries/NDB_Menu_Filter_$test_name.class.inc")
-                             || $this->existsAndRequire($base."php/libraries/NDB_Menu_Filter_$test_name.class.inc"))
+        if(is_dir($base . "modules/$test_name")) {
+            // New module style
+            set_include_path($base . "modules/$test_name:" . get_include_path() );
+            
+            if(empty($subtest)
+                && $this->existsAndRequire($base."modules/$test_name/php/NDB_Menu_Filter_$test_name.class.inc") 
             ) {
+                // No subtest, load the menu
 
-
+ 
                 $mode = isset($_REQUEST['mode']) ? $_REQUEST['mode'] : '';
                 $html = $this->loadMenu($test_name, $mode);
-            if (Utility::isErrorX($html)) {
-                return PEAR::raiseError($html->getMessage());
+                if (Utility::isErrorX($html)) {
+                    return PEAR::raiseError($html->getMessage());
+                }
+
+                $this->type = 'menu';
+                return $html;
             }
-  
-            $this->type = 'menu';
-            return $html;
-        }
+            exit("-1");
+        } else {
+            // Old precedence style for "modules"
+            // it is a menu
+            if (empty($subtest) && ($this->existsAndRequire($base."project/libraries/NDB_Menu_$test_name.class.inc") 
+                || $this->existsAndRequire($base."php/libraries/NDB_Menu_$test_name.class.inc") 
+                || $this->existsAndRequire($base."project/libraries/NDB_Menu_Filter_$test_name.class.inc")
+                || $this->existsAndRequire($base."php/libraries/NDB_Menu_Filter_$test_name.class.inc"))
+            ) {
 
-        // it is a form
-        if ($this->existsAndRequire($base."project/libraries/NDB_Form_$test_name.class.inc")
-            || $this->existsAndRequire($base."php/libraries/NDB_Form_$test_name.class.inc")) {
+                $mode = isset($_REQUEST['mode']) ? $_REQUEST['mode'] : '';
+                $html = $this->loadMenu($test_name, $mode, $controlPanel);
+                if (Utility::isErrorX($html)) {
+                    return PEAR::raiseError($html->getMessage());
+                }
 
-            $identifier = isset($_REQUEST['identifier']) ? $_REQUEST['identifier'] : '';
-            $html = $this->loadForm($test_name, $subtest, $identifier);
-            if (Utility::isErrorX($html)) {
-                return PEAR::raiseError($html->getMessage());
+                $this->type = 'menu';
+                return $html;
+
             }
 
-            $this->type = 'form';
-            return $html;
-        }
-        
-        // it is a reliability form
-          if ($this->existsAndRequire($base."project/libraries/NDB_Reliability_$test_name.class.inc")
-              || $this->existsAndRequire($base."php/libraries/NDB_Reliability_$test_name.class.inc")) {
+            // it is a form
+            if ($this->existsAndRequire($base."project/libraries/NDB_Form_$test_name.class.inc")
+                || $this->existsAndRequire($base."php/libraries/NDB_Form_$test_name.class.inc")) {
 
-              $html = $this->loadReliability($test_name, $subtest, $_REQUEST['identifier'], $_REQUEST['reliability_center_id']);
-              if (Utility::isErrorX($html)) {
-                  return PEAR::raiseError($html->getMessage());
-              }
+                    $identifier = isset($_REQUEST['identifier']) ? $_REQUEST['identifier'] : '';
+                    $html = $this->loadForm($test_name, $subtest, $identifier);
+                    if (Utility::isErrorX($html)) {
+                        return PEAR::raiseError($html->getMessage());
+                    }
 
-              $this->type = 'reliability';
-              return $html;
-          }
+                    $this->type = 'form';
+                    return $html;
+                }
 
-        // it is an intrument
-          if ($this->existsAndRequire($base."project/instruments/NDB_BVL_Instrument_$test_name.class.inc")
+            // it is a reliability form
+            if ($this->existsAndRequire($base."project/libraries/NDB_Reliability_$test_name.class.inc")
+                || $this->existsAndRequire($base."php/libraries/NDB_Reliability_$test_name.class.inc")) {
+
+                    $html = $this->loadReliability($test_name, $subtest, $_REQUEST['identifier'], $_REQUEST['reliability_center_id']);
+                    if (Utility::isErrorX($html)) {
+                        return PEAR::raiseError($html->getMessage());
+                    }
+
+                    $this->type = 'reliability';
+                    return $html;
+                }
+
+            // it is an intrument
+            if ($this->existsAndRequire($base."project/instruments/NDB_BVL_Instrument_$test_name.class.inc")
                 || $test_name=='instrument_preview') {
-    
-            $html = $this->loadInstrument($test_name, $subtest, $CommentID, $nextpage);
-            if (Utility::isErrorX($html)) {
-                return PEAR::raiseError($html->getMessage());
-            }
+                    $html = $this->loadInstrument($test_name, $subtest, $CommentID, $nextpage);
 
-            $this->type = 'instrument';
-            return $html;
-        } else if(file_exists($base."project/instruments/$test_name.linst")) {
-            $html = $this->loadInstrument($test_name, $subtest, $CommentID);
-            if (PEAR::isError($html)) {
-                return PEAR::raiseError($html->getMessage());
-            }
-            $this->type = 'instrument';
-            return $html;
+                    if (Utility::isErrorX($html)) {
+                        return PEAR::raiseError($html->getMessage());
+                    }
+
+                    $this->type = 'instrument';
+                    return $html;
+                } else if(file_exists($base."project/instruments/$test_name.linst")) {
+                    $html = $this->loadInstrument($test_name, $subtest, $CommentID);
+                    if (Utility::isErrorX($html)) {
+                        return PEAR::raiseError($html->getMessage());
+                    }
+                    $this->type = 'instrument';
+                    return $html;
+                }
         }
 
         // it is nothing!

@@ -4,10 +4,11 @@
  */
 require_once('smarty3/Smarty.class.php');
 class Smarty_neurodb extends Smarty {
+<<<<<<< HEAD
     var $template_dir;
     var $project_template_dir;
 
-    function Smarty_neurodb() {
+    function Smarty_neurodb($moduleName = null) {
         $config =& NDB_Config::singleton();
         $paths = $config->getSetting('paths');
         $this->__construct();
@@ -17,6 +18,7 @@ class Smarty_neurodb extends Smarty {
         $this->compile_dir = $paths['base']."smarty/templates_c/";
         $this->config_dir = $paths['base']."smarty/configs/";
         $this->cache_dir = $paths['base']."smarty/cache/";
+        $this->modules_dir = $paths['base'] . 'modules/' . $moduleName;
         $this->caching = false;
         $this->default_resource_type="neurodb";
         $this->assign('app_name','NeuroDB');
