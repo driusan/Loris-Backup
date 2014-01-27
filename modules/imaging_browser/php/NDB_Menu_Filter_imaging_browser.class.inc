@@ -138,5 +138,6 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
         );
 
         $this->tpl_data['numOutputTypes'] = count($outputTypes);
+        $this->addBasicText('keyword','Search keyword in Comments', array("size"=>10,"maxlength"=>25));
     }
 }
