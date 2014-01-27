@@ -693,3 +693,7 @@ vertical-align: bottom;
 tr.directentry {
     background: #BDDDBD;
 }
+
+.newdata {
+    color: red
+}
