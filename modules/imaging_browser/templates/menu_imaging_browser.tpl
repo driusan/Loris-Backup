@@ -12,8 +12,8 @@
     <th>DCCID</th><td colspan="1" class="MenuWidth"><input type='text' name='filter[candID]' value='{$filter.candID}' size="30"></td>
 </tr>
 <tr>
-    <th>Site</th><td colspan="1" class="MenuWidth">{html_options options=$site_options selected=$filter.site name="filter[site]"}</td>
-    <th>PSCID</th><td colspan="1" class="MenuWidth"><input type='text' name='filter[pscID]' value='{$filter.pscID}' size="30"></td><td>&nbsp;</td>
+    <th>Site</th><td colspan="1" class="MenuWidth">{html_options options=$site_options selected=$filter.site name=filter[site]}</td>
+    <th>PSCID</th><td colspan="1" class="MenuWidth">{$form.pscid.html}</td><td>&nbsp;</td>
 </tr>
 
 <tr>
@@ -52,6 +52,8 @@
             <td nowrap="nowrap">
             {if $items[item][piece].name == "First_Acq_Date" || $items[item][piece].name == "Last_QC"}
                 {$items[item][piece].value|date_format}
+            {elseif $items[item][piece].name == "New_Data" && $items[item][piece].value == "new"}
+                <span class="newdata">NEW</span>
             {else}
                 {$items[item][piece].value}
             {/if}
