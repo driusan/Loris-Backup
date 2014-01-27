@@ -94,12 +94,6 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
             "$NewDataSubquery as New_Data",
             "$T1PassSubquery as T1_Passed",
             "$T2PassSubquery as T2_Passed",
-            "CASE 
-            COALESCE((SELECT MIN(QCLastChangeTime) from files left join files_qcstatus USING(FileID) WHERE files.SessionID=s.ID AND OutputType='native' AND AcquisitionProtocolID not in (1, 2, 3, 52) group by QCLastChangeTime order by QCLastChangeTime limit 1), 'new')
-            WHEN 'new' THEN 'new' 
-            WHEN '' THEN 'new'
-            ELSE ''
-            END as New_Data",
             "'links' as Links"
         );
         $this->order_by = 'c.PSCID, s.Visit_label';
