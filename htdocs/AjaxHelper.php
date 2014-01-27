@@ -1,14 +1,12 @@
 <?php
 /**
- * Controls access to a module's javascript files on the filesystem. This script
- * should ensure that only files relative to module's path specified are
- * accessible.
- * By calling new NDB_Client(), it also makes sure that the user is logged in to 
- * Loris.
+ * Invokes a module's helper scripts, which should be contained in said
+ * module's php directory.
  *
- * It also does validation to make sure required config settings are specified.
+ * Used by "new" style modules for accessing ajax helper scripts which
+ * are located outside of the htdocs directory.
  *
- * Used by "new" style modules.
+ * Note that right now only PHP ajax helper's are supported.
  *
  * PHP Version 5
  *
@@ -48,26 +46,17 @@ if (empty($basePath)) {
 
 // Now get the file and do file validation
 $Module = $_GET['Module'];
-$File = $_GET['file'];
-if(empty($File)) {
-    $File = $Module . ".js";
-}
+$File = $_GET['script'];
 if (empty($Module) || empty($File)) {
     error_log("Missing required parameters for request");
     header("HTTP/1.1 400 Bad Request");
     exit(2);
 }
 
-// File validation
-if (strpos($File, ".js") === false) {
-    error_log("ERROR: Not a javascript file.");
-    header("HTTP/1.1 400 Bad Request");
-    exit(3);
-}
-
 // Make sure that the user isn't trying to break out of the $path by
 // using a relative filename.
-// No need to check for '/' since all downloads are relative to $basePath
+// No need to check for '/' since all scripts are relative to $basePath
+// and there's no way to go up a level.
 if (strpos("..", $File) !== false) {
     error_log("ERROR: Invalid filename");
     header("HTTP/1.1 400 Bad Request");
@@ -75,7 +64,7 @@ if (strpos("..", $File) !== false) {
 }
 
 
-$FullPath = $basePath . "/modules/$Module/js/$File";
+$FullPath = $basePath . "/modules/$Module/ajax/$File";
 
 if (!file_exists($FullPath)) {
     error_log("ERROR: File $File does not exist");
@@ -83,9 +72,5 @@ if (!file_exists($FullPath)) {
     exit(5);
 }
 
-$MimeType = "application/javascript";
-header("Content-type: $MimeType");
-$fp = fopen($FullPath, 'r');
-fpassthru($fp);
-fclose($fp);
+require $FullPath;
 ?>
