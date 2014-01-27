@@ -69,6 +69,8 @@ class NDB_Caller extends PEAR
 
         if(is_dir($base . "modules/$test_name")) {
             // New module style
+            // Only supports Menu_Filters and Forms.
+            // Modules can not have instruments or reliability.
             set_include_path($base . "modules/$test_name:" . get_include_path() );
             
             if(empty($subtest)
@@ -85,7 +87,19 @@ class NDB_Caller extends PEAR
 
                 $this->type = 'menu';
                 return $html;
+            } else if ($this->existsAndRequire($base."modules/$test_name/php/NDB_Form_$test_name.class.inc")) {
+                $identifier = isset($_REQUEST['identifier']) ? $_REQUEST['identifier'] : '';
+                $html = $this->loadForm($test_name, $subtest, $identifier);
+
+                if (Utility::isErrorX($html)) {
+                    return PEAR::raiseError($html->getMessage());
+                }
+
+                $this->type = 'form';
+                return $html;
             }
+            // Exit to make sure we don't accidentally mix old style and new style. If something is a module, it
+            // should remain a module.
             exit("-1");
         } else {
             // Old precedence style for "modules"
