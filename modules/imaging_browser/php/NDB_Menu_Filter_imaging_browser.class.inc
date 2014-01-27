@@ -80,8 +80,7 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
                 f.PendingStaging=0 AND 
                 f.FileType='mnc' AND 
                 f.OutputType='native' AND 
-                f.AcquisitionProtocolID not in (1, 2, 3, 52)
-            GROUP BY s.ID";
+                f.AcquisitionProtocolID not in (1, 2, 3, 52)";
 
         //        GROUP BY f.SessionID ORDER BY p.Name, firstAcqDate, c.CandID, s.Visit_label;
         $this->columns = array(
@@ -95,6 +94,12 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
             "$NewDataSubquery as New_Data",
             "$T1PassSubquery as T1_Passed",
             "$T2PassSubquery as T2_Passed",
+            "CASE 
+            COALESCE((SELECT MIN(QCLastChangeTime) from files left join files_qcstatus USING(FileID) WHERE files.SessionID=s.ID AND OutputType='native' AND AcquisitionProtocolID not in (1, 2, 3, 52) group by QCLastChangeTime order by QCLastChangeTime limit 1), 'new')
+            WHEN 'new' THEN 'new' 
+            WHEN '' THEN 'new'
+            ELSE ''
+            END as New_Data",
             "'links' as Links"
         );
         $this->order_by = 'c.PSCID, s.Visit_label';
@@ -140,5 +145,6 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
 
         $this->tpl_data['numOutputTypes'] = count($outputTypes);
         $this->addBasicText('keyword','Search keyword in Comments', array("size"=>10,"maxlength"=>25));
+        $this->addBasicText('pscid','PSCID', array("size"=>10,"maxlength"=>25));
     }
 }
