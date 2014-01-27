@@ -47,7 +47,30 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
      */
     function _setupVariables()
     {
-        $this->query = " FROM psc AS p 
+        $NewDataSubquery = "CASE 
+            COALESCE((SELECT MIN(QCLastChangeTime) from files left join files_qcstatus USING(FileID) WHERE files.SessionID=s.ID AND OutputType='native' AND AcquisitionProtocolID not in (1, 2, 3, 52) group by QCLastChangeTime order by QCLastChangeTime limit 1), 'new')
+            WHEN 'new' THEN 'new' 
+            WHEN '' THEN 'new'
+            ELSE ''
+            END";
+        $T1PassSubquery = "CASE 
+            COALESCE((SELECT MIN(files_qcstatus.QCStatus+0) FROM files JOIN files_qcstatus USING (FileID) WHERE files.SessionID=s.ID AND files.AcquisitionProtocolID=44 GROUP BY files.SessionID), '')
+            WHEN '' THEN ''
+            WHEN 1 THEN 'Passed'
+            WHEN 2 THEN 'Failed'
+            END
+            ";
+    $T2PassSubquery = "CASE 
+            COALESCE((SELECT MIN(files_qcstatus.QCStatus+0) FROM files JOIN files_qcstatus USING (FileID) WHERE files.SessionID=s.ID AND files.AcquisitionProtocolID=45 GROUP BY files.SessionID), '')
+            WHEN '' THEN ''
+            WHEN 1 THEN 'Passed'
+            WHEN 2 THEN 'Failed'
+            END
+            ";
+
+
+
+            $this->query = " FROM psc AS p 
                 JOIN session s ON (s.CenterID=p.CenterID) 
                 JOIN candidate c ON (c.CandID=s.CandID) 
                 JOIN files f ON (f.SessionID=s.ID) 
@@ -68,14 +91,9 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
             's.MRIQCStatus as QC_Status',
             'MIN(md.AcquisitionDate) as First_Acq_Date',
             'MAX(fqc.QCLastChangeTime) as Last_QC',
-            "CASE 
-            COALESCE((SELECT MIN(QCLastChangeTime) from files left join files_qcstatus USING(FileID) WHERE files.SessionID=s.ID AND OutputType='native' AND AcquisitionProtocolID not in (1, 2, 3, 52) group by QCLastChangeTime order by QCLastChangeTime limit 1), 'new')
-            WHEN 'new' THEN 'new' 
-            WHEN '' THEN 'new'
-            ELSE ''
-            END as New_Data",
-            "'hello' as T1_Passed",
-            "'goodbye' as T2_Passed",
+            "$NewDataSubquery as New_Data",
+            "$T1PassSubquery as T1_Passed",
+            "$T2PassSubquery as T2_Passed",
             "'links' as Links"
         );
         $this->order_by = 'c.PSCID, s.Visit_label';
