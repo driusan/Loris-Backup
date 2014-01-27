@@ -80,7 +80,8 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
                 f.PendingStaging=0 AND 
                 f.FileType='mnc' AND 
                 f.OutputType='native' AND 
-                f.AcquisitionProtocolID not in (1, 2, 3, 52)";
+                f.AcquisitionProtocolID not in (1, 2, 3, 52)
+            GROUP BY s.ID";
 
         //        GROUP BY f.SessionID ORDER BY p.Name, firstAcqDate, c.CandID, s.Visit_label;
         $this->columns = array(
