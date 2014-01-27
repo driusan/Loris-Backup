@@ -1,7 +1,7 @@
 <!-- selection filter -->
 <!-- qnts fixme this modified version does not display certain fields in the mri browser selection window-->
 <form>
-
+<input type="hidden" name="test_name" value="imaging_browser">
 <!-- The colspan is only there to make quick changes possible -->
 <table class="std">
 <tr>                                                                                                                                                          
@@ -39,7 +39,7 @@
     {foreach from=$headers item=item key=key}
         <th {if $key eq 'Links'}colspan="{$numOutputTypes+1}"{/if}>
         {if $item neq ''}<a href="?filter[order][field]={$key}&filter[order][asc]={if $filter.order.field eq $key && $filter.order.asc eq 'ASC'}DESC{else}ASC{/if}">{/if}
-            {$key}
+            {$item.displayName}
         {if $item neq ''}</a>{/if}
         </th>
     {/foreach}
@@ -52,10 +52,7 @@
         <td>{$timepoints[timepointIdx].PSCID}</td>
         <td>{$timepoints[timepointIdx].visitLabel}</td>
         <td>{if $timepoints[timepointIdx].QCStatus}{$timepoints[timepointIdx].QCStatus}{else}&nbsp;{/if}</td>
-{*        <td>{if $timepoints[timepointIdx].SubprojectID}{$timepoints[timepointIdx].SubprojectID}{else}&nbsp;{/if}</td> 	*}
         <td>{if $timepoints[timepointIdx].firstAcqDate > 0}{$timepoints[timepointIdx].firstAcqDate|date_format}{else}&nbsp;{/if}</td>
-{*        <td>{$timepoints[timepointIdx].firstInsertDate|date_format}</td>	*}
-{*        <td>{$timepoints[timepointIdx].firstQCDate|date_format}</td>	*}
         <td>{$timepoints[timepointIdx].lastQCDate|date_format}</td>
         <td>{if $timepoints[timepointIdx].newData}<font color="red">NEW</font>{else}&nbsp;{/if}</td>
         <td>{$timepoints[timepointIdx].T1Pass}</td>
