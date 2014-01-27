@@ -36,6 +36,7 @@
 
 <table class="fancytable" width="100%" border="1">
     <tr>
+        <th>No.</th>
     {foreach from=$headers item=item key=key}
         <th {if $key eq 'Links'}colspan="{$numOutputTypes+1}"{/if}>
         {if $item neq ''}<a href="?filter[order][field]={$key}&filter[order][asc]={if $filter.order.field eq $key && $filter.order.asc eq 'ASC'}DESC{else}ASC{/if}">{/if}
@@ -44,6 +45,24 @@
         </th>
     {/foreach}
     </tr>
+    <tr>
+    {section name=item loop=$items}
+            <!-- print out data rows -->
+            {section name=piece loop=$items[item]}
+            <td nowrap="nowrap">
+            {if $items[item][piece].name == "First_Acq_Date" || $items[item][piece].name == "Last_QC"}
+                {$items[item][piece].value|date_format}
+            {else}
+                {$items[item][piece].value}
+            {/if}
+            </td>
+    {/section}
+    </tr>
+    {sectionelse}
+    <tr><td colspan="8">Nothing found</td></tr>
+    {/section}
+
+{*
    {section name=timepointIdx loop=$timepoints}
     <tr>
         <td>{$timepoints[timepointIdx].rownum}</td>
@@ -69,6 +88,7 @@
         <td colspan="12">No data selected</td>
     </tr>
     {/section}
+    *}
 </table>
 
 {if $numTimepoints}

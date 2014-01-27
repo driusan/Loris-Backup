@@ -57,17 +57,24 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
                 f.PendingStaging=0 AND 
                 f.FileType='mnc' AND 
                 f.OutputType='native' AND 
-                f.AcquisitionProtocolID not in (1, 2, 3, 52)";
+                f.AcquisitionProtocolID not in (1, 2, 3, 52)
+            GROUP BY s.ID";
 
         //        GROUP BY f.SessionID ORDER BY p.Name, firstAcqDate, c.CandID, s.Visit_label;
-        $this->columns = array('
-            c.PSCID as PSCID',
+        $this->columns = array(
+            'p.MRI_alias as Site',
+            'c.PSCID as PSCID',
             'c.CandID as DCCID',
             's.visit_label as Visit_Label',
-            'c.ProjectID as Project',
-            'c.CenterID as Site',
+            's.MRIQCStatus as QC_Status',
+            'MIN(md.AcquisitionDate) as First_Acq_Date',
+            'MAX(fqc.QCLastChangeTime) as Last_QC',
+            "'qux' as New_Data",
+            "'hello' as T1_Passed",
+            "'goodbye' as T2_Passed",
+            "'links' as Links"
         );
-        $this->order_by = 'PSCID';
+        $this->order_by = 'c.PSCID, s.Visit_label';
         $this->headers = array(
             'Site',
             'PSCID',
