@@ -38,7 +38,9 @@
     <tr>
         <th>No.</th>
     {foreach from=$headers item=item key=key}
-        <th {if $key eq 'Links'}colspan="{$numOutputTypes+1}"{/if}>
+        {* Add 3 to the numOutputTypes (native, selected, all types plus
+           other types in the database *}
+        <th {if $item.name eq 'Links'}colspan="{$numOutputTypes+3}"{/if}>
         {if $item neq ''}<a href="?filter[order][field]={$key}&filter[order][asc]={if $filter.order.field eq $key && $filter.order.asc eq 'ASC'}DESC{else}ASC{/if}">{/if}
             {$item.displayName}
         {if $item neq ''}</a>{/if}
@@ -46,19 +48,29 @@
     {/foreach}
     </tr>
     <tr>
+    
     {section name=item loop=$items}
             <!-- print out data rows -->
             {section name=piece loop=$items[item]}
-            <td nowrap="nowrap">
-            {if $items[item][piece].name == "First_Acq_Date" || $items[item][piece].name == "Last_QC"}
-                {$items[item][piece].value|date_format}
-            {elseif $items[item][piece].name == "New_Data" && $items[item][piece].value == "new"}
-                <span class="newdata">NEW</span>
-            {else}
-                {$items[item][piece].value}
+            {if $items[item][piece].name neq 'Links'} 
+                <td nowrap="nowrap">
+                {if $items[item][piece].name == "First_Acq_Date" || $items[item][piece].name == "Last_QC"}
+                    {$items[item][piece].value|date_format}
+                {elseif $items[item][piece].name == "New_Data" && $items[item][piece].value == "new"}
+                    <span class="newdata">NEW</span>
+                {else}
+                    {$items[item][piece].value}
+                {/if}
+                </td>
             {/if}
+    {/section}
+    {* Links to files/output types *}
+    {section name=typeIdx loop=$outputTypes}
+            <td><a href="mri_browser.php?sessionID={$timepoints[timepointIdx].sessionID}&outputType={if $outputTypes[typeIdx].outputType == 'selected'}native&selectedOnly=1{else}{$outputTypes[typeIdx].outputType|escape:"url"}{/if}&backURL={$backURL|escape:"url"}">{$outputTypes[typeIdx].outputType}</a>
             </td>
     {/section}
+                                                <td><a href="mri_browser.php?sessionID={$timepoints[timepointIdx].sessionID}&backURL={$backURL|escape:"url"}">all types</a></td>
+
     </tr>
     {sectionelse}
     <tr><td colspan="8">Nothing found</td></tr>
@@ -78,13 +90,7 @@
         <td>{if $timepoints[timepointIdx].newData}<font color="red">NEW</font>{else}&nbsp;{/if}</td>
         <td>{$timepoints[timepointIdx].T1Pass}</td>
         <td>{$timepoints[timepointIdx].T2Pass}</td>
-        {section name=typeIdx loop=$outputTypes}
-        <td><a href="mri_browser.php?sessionID={$timepoints[timepointIdx].sessionID}&outputType={if $outputTypes[typeIdx].outputType == 'selected'}native&selectedOnly=1
-            {else}{$outputTypes[typeIdx].outputType|escape:"url"}{/if}&backURL={$backURL|escape:"url"}">{$outputTypes[typeIdx].outputType}</a>
-        </td>
-        {/section}
-        <td><a href="mri_browser.php?sessionID={$timepoints[timepointIdx].sessionID}&backURL={$backURL|escape:"url"}">all types</a></td>
-    </tr>
+            </tr>
     {sectionelse}
     <tr>
         <td colspan="12">No data selected</td>
