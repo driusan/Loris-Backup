@@ -259,7 +259,6 @@ class NDB_Caller extends PEAR
 
         // make an instance of the instrument's object
         $instrument =& NDB_BVL_Instrument::factory($instrumentName, $commentID, $page);
-        $this->instrument = $instrument;
         if(method_exists($instrument, 'getControlPanel')) {
             $this->controlPanel = $instrument->getControlPanel();
         }
