@@ -6,7 +6,7 @@
  * PHP Version 5
  *
  *  @package    Main
- *  @subpackage RadiologicalReview
+ *  @subpackage Imaging 
  *  @author     Dave MacFarlane <driusan@bic.mni.mcgill.ca>
  *  @license    Loris license
  *  @link       https://www.github.com/aces/Loris-Trunk/
@@ -60,7 +60,7 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
             WHEN 2 THEN 'Failed'
             END
             ";
-    $T2PassSubquery = "CASE 
+        $T2PassSubquery = "CASE 
             COALESCE((SELECT MIN(files_qcstatus.QCStatus+0) FROM files JOIN files_qcstatus USING (FileID) WHERE files.SessionID=s.ID AND files.AcquisitionProtocolID=45 GROUP BY files.SessionID), '')
             WHEN '' THEN ''
             WHEN 1 THEN 'Passed'
@@ -68,19 +68,25 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
             END
             ";
 
+        $PendingFailSubquery = "
+            CASE s.MRIQCStatus
+                WHEN 'Fail' THEN
+                    IF(s.MRIQCPending, 'Pending Fail', 'Fail')
+                ELSE s.MRIQCStatus
+            END 
+            ";
 
-
-            $this->query = " FROM psc AS p 
-                JOIN session s ON (s.CenterID=p.CenterID) 
-                JOIN candidate c ON (c.CandID=s.CandID) 
-                JOIN files f ON (f.SessionID=s.ID) 
-                LEFT JOIN files_qcstatus fqc ON (fqc.FileID=f.FileID) 
-                JOIN mri_acquisition_dates md ON (md.SessionID=s.ID) 
+        $this->query = " FROM psc AS p 
+            JOIN session s ON (s.CenterID=p.CenterID) 
+            JOIN candidate c ON (c.CandID=s.CandID) 
+            JOIN files f ON (f.SessionID=s.ID) 
+            LEFT JOIN files_qcstatus fqc ON (fqc.FileID=f.FileID) 
+            JOIN mri_acquisition_dates md ON (md.SessionID=s.ID) 
             WHERE 
-                f.PendingStaging=0 AND 
-                f.FileType='mnc' AND 
-                f.OutputType='native' AND 
-                f.AcquisitionProtocolID not in (1, 2, 3, 52)";
+            f.PendingStaging=0 AND 
+            f.FileType='mnc' AND 
+            f.OutputType='native' AND 
+            f.AcquisitionProtocolID not in (1, 2, 3, 52)";
 
         //        GROUP BY f.SessionID ORDER BY p.Name, firstAcqDate, c.CandID, s.Visit_label;
         $this->columns = array(
@@ -88,7 +94,7 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
             'c.PSCID as PSCID',
             'c.CandID as DCCID',
             's.visit_label as Visit_Label',
-            's.MRIQCStatus as QC_Status',
+            "$PendingFailSubquery as QC_Status",
             'MIN(md.AcquisitionDate) as First_Acq_Date',
             'MAX(fqc.QCLastChangeTime) as Last_QC',
             "$NewDataSubquery as New_Data",
@@ -111,11 +117,29 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
             'T2_Passed',
             'Links'
         );
-        $this->validFilters = array('c.PSCID');
-        
-        $this->formToFilter = array ('pscid' => 'c.PSCID');
+        $this->validFilters = array(
+            'c.PSCID',
+            's.Visit_label',
+            'c.CandID',
+            'c.ProjectID',
+            'c.CenterID',
+            's.MRIQCStatus',
+            "(s.MRIQCPending='Y' OR s.MRIQCStatus='' OR ifnull(fqc.QCFirstChangeTime,0)=0)"
+        );
+
+        $pendingSQL = "(s.MRIQCPending='Y' OR s.MRIQCStatus='' OR ifnull(fqc.QCFirstChangeTime,0)=0)";
+        $this->formToFilter = array(
+            'pscid' => 'c.PSCID',
+            'VL'    => 's.Visit_label',
+            'DCCID'=> 'c.CandID',
+            'ProjectID' => 'c.ProjectID',
+            'SiteID' => 'c.CenterID',
+            'VisitQCStatus' => 's.MRIQCStatus',
+            'pending' => $pendingSQL
+        );
         $this->EqualityFilters = array();
         $this->searchKeyword    = array();
+        $this->CheckboxFilters = array($pendingSQL);
     }
 
     /**
@@ -126,7 +150,19 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
     function _setFilterForm()
     {
         $DB = Database::singleton();
+        $allAr = array('' => 'All');
         $this->addBasicText('pscid','PSCID', array("size"=>10,"maxlength"=>25));
+        $this->addBasicText('VL', 'Visit Label', array('size' => "10", "maxlength"=>"25") );
+        $this->addBasicText('DCCID', 'DCCID', array('size' => 10, "maxlength" => 25));
+        $this->addSelect('ProjectID', 'Project', $allAr + Utility::getProjectList());
+        $this->addSelect('SiteID', 'Site', $allAr + Utility::getSiteList());
+        $this->addSelect(
+            'VisitQCStatus',
+            'QC Status',
+            array(''=>'All', 'Pass'=>'Pass', 'Fail'=>'Fail')
+        );
+
+        $this->tpl_data['pending'] = isset($_REQUEST['pending']);
 
         $outputTypes = $DB->pselect("SELECT DISTINCT OutputType AS outputType FROM files WHERE FileType='mnc' AND OutputType!='native'", array());
 
@@ -139,7 +175,6 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
 
         $this->tpl_data['numOutputTypes'] = count($outputTypes);
         $this->addBasicText('keyword','Search keyword in Comments', array("size"=>10,"maxlength"=>25));
-        $this->addBasicText('pscid','PSCID', array("size"=>10,"maxlength"=>25));
 
         $outputTypes = $DB->pselect("SELECT DISTINCT OutputType AS outputType FROM files WHERE FileType='mnc' AND OutputType!='native'", array());
 

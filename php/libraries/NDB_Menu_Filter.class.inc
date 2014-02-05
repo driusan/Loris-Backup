@@ -223,18 +223,21 @@ class NDB_Menu_Filter extends NDB_Menu
                 $formFilters['order'] = $_REQUEST['filter']['order'];
             }
 
+
+            }
             // save filter data in the session
             $oldFormFilters = $_SESSION['State']->getProperty('filter');
-            if (is_array($oldFormFilters)) {
-                foreach ($oldFormFilters as $key => $val) {
-                    if (in_array($key, $this->CheckboxFilters)) {
+            if(is_array($oldFormFilters)) {
+                print_r($this->CheckboxFilters);
+
+                foreach($oldFormFilters as $key => $val) {
+                    if(in_array($key, $this->CheckboxFilters)) {
                         unset($oldFormFilters[$key]);
                     }
                 }
                 $formFilters = array_merge($oldFormFilters, $formFilters);
             }
             $_SESSION['State']->setProperty('filter', $formFilters);
-        }
 
         $filter = $_SESSION['State']->getProperty('filter');
 
@@ -382,10 +385,17 @@ class NDB_Menu_Filter extends NDB_Menu
         $query = '';
         if ((!empty($val) || $val === '0') && $field != 'order') {
 
+<<<<<<< HEAD
             if (in_array($field, $this->CheckboxFilters) && $val) {
                 $query .= " AND $field";
             } elseif (strtolower(substr($field, -8)) == 'centerid'
                 // special rule for dropdowns where value is numeric
+=======
+                    // special rule for dropdowns where value is numeric
+                    if(in_array($field, $this->CheckboxFilters) && $val) {
+                        $query .= "AND $field";
+                    } elseif (strtolower(substr($field, -8)) == 'centerid'
+>>>>>>> Finished implementing filters in MRI Browser as normal module
                         || strtolower(substr($field, -10)) == 'categoryid'
                         || strtolower(substr($field, -6)) == 'gender'
                         || (isset($this->EqualityFilters) 
@@ -431,6 +441,7 @@ class NDB_Menu_Filter extends NDB_Menu
                 $query_piece = $this->_addValidFilters($prepared_key, $field, $val); 
                 if (!empty($query_piece)) {
                     $query .= $query_piece;
+<<<<<<< HEAD
 
                     if (in_array($field, $this->CheckboxFilters)) {
                         continue;
@@ -438,6 +449,12 @@ class NDB_Menu_Filter extends NDB_Menu
                     if ($prepared_key != 'pending') {
                         $qparams["v_$prepared_key"] = $val;
                     }
+=======
+                    if(in_array($field, $this->CheckboxFilters)) {
+                        continue;
+                    }
+                    $qparams["v_$prepared_key"] = $val;
+>>>>>>> Finished implementing filters in MRI Browser as normal module
                 }
             }
         }

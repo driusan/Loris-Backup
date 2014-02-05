@@ -1,25 +1,23 @@
 <!-- selection filter -->
 <!-- qnts fixme this modified version does not display certain fields in the mri browser selection window-->
-<form>
-<input type="hidden" name="test_name" value="imaging_browser">
+<form method="post" action="main.php?test_name=imaging_browser">
 <!-- The colspan is only there to make quick changes possible -->
 <table class="std">
 <tr>                                                                                                                                                          
     <th nowrap="nowrap" colspan="5">Selection Filter</th>
 </tr>
 <tr>
-   <th>Projects</th><td class="MenuWidth">{html_options options=$projects selected=$filter.project name="filter[project]"}</td>
-    <th>DCCID</th><td colspan="1" class="MenuWidth"><input type='text' name='filter[candID]' value='{$filter.candID}' size="30"></td>
+   <th>{$form.ProjectID.label}</th><td class="MenuWidth">{$form.ProjectID.html}</td>
+    <th>{$form.DCCID.label}</th><td class="MenuWidth">{$form.DCCID.html}</td>
 </tr>
 <tr>
-    <th>Site</th><td colspan="1" class="MenuWidth">{html_options options=$site_options selected=$filter.site name=filter[site]}</td>
-    <th>PSCID</th><td colspan="1" class="MenuWidth">{$form.pscid.html}</td><td>&nbsp;</td>
+    <th>{$form.SiteID.label}</th><td class="MenuWidth">{$form.SiteID.html}</td>
+    <th>{$form.pscid.label}</th><td class="MenuWidth">{$form.pscid.html}</td>
 </tr>
 
 <tr>
-    <th>QC Status</th><td class="MenuWidth">{html_options options=$qcStatus_options selected=$filter.qcStatus name="filter[qcStatus]"}</td>    
-    <th>Visit label</th><td class="MenuWidth"><input type='text' name='filter[visitLabel]' value='{$filter.visitLabel}' size="4"></td></td><td>&nbsp;</td>
-    <!--th>Subproject</th><td colspan="2">{html_options options=$SubprojectID_options selected=$filter.SubprojectID name="filter[SubprojectID]"}</td-->
+    <th>{$form.VisitQCStatus.label}</th><td class="MenuWidth">{$form.VisitQCStatus.html}</td>    
+    <th>{$form.VL.label}</th><td class="MenuWidth">{$form.VL.html}</td>
 </tr>
 <tr>
    <th>Pending and New</th><td class="MenuWidth">{html_options options=$pending_new_options selected=$filter.pending name=filter[pending]}</td>   
@@ -41,7 +39,7 @@
         {* Add 3 to the numOutputTypes (native, selected, all types plus
            other types in the database *}
         <th {if $item.name eq 'Links'}colspan="{$numOutputTypes+3}"{/if}>
-        {if $item neq ''}<a href="?filter[order][field]={$key}&filter[order][asc]={if $filter.order.field eq $key && $filter.order.asc eq 'ASC'}DESC{else}ASC{/if}">{/if}
+        {if $item neq ''}<a href="main.php?test_name=imaging_browser&filter[order][field]={$item.name}&filter[order][fieldOrder]={$item.fieldOrder}">{/if}
             {$item.displayName}
         {if $item neq ''}</a>{/if}
         </th>
@@ -75,28 +73,6 @@
     {sectionelse}
     <tr><td colspan="8">Nothing found</td></tr>
     {/section}
-
-{*
-   {section name=timepointIdx loop=$timepoints}
-    <tr>
-        <td>{$timepoints[timepointIdx].rownum}</td>
-        <td>{$timepoints[timepointIdx].centerName}</td>
-        <td>{$timepoints[timepointIdx].candID}</td>
-        <td>{$timepoints[timepointIdx].PSCID}</td>
-        <td>{$timepoints[timepointIdx].visitLabel}</td>
-        <td>{if $timepoints[timepointIdx].QCStatus}{$timepoints[timepointIdx].QCStatus}{else}&nbsp;{/if}</td>
-        <td>{if $timepoints[timepointIdx].firstAcqDate > 0}{$timepoints[timepointIdx].firstAcqDate|date_format}{else}&nbsp;{/if}</td>
-        <td>{$timepoints[timepointIdx].lastQCDate|date_format}</td>
-        <td>{if $timepoints[timepointIdx].newData}<font color="red">NEW</font>{else}&nbsp;{/if}</td>
-        <td>{$timepoints[timepointIdx].T1Pass}</td>
-        <td>{$timepoints[timepointIdx].T2Pass}</td>
-            </tr>
-    {sectionelse}
-    <tr>
-        <td colspan="12">No data selected</td>
-    </tr>
-    {/section}
-    *}
 </table>
 
 {if $numTimepoints}
