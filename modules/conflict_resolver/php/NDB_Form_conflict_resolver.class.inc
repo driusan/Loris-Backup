@@ -6,7 +6,7 @@ require_once "NDB_Form.class.inc";
  * Conflict resolver
  * @package main
  */
-class NDB_Form_conflicts_resolve extends NDB_Form
+class NDB_Form_conflict_resolver extends NDB_Form
 {
     
     function _hasAccess()
@@ -142,7 +142,7 @@ class NDB_Form_conflicts_resolve extends NDB_Form
         //$this->form->freeze();
     }
 
-    function conflicts_resolve()
+    function conflict_resolver()
     {
         $DB =& Database::singleton();
         $config =& NDB_Config::singleton();
