@@ -49,8 +49,9 @@
     
     {section name=item loop=$items}
             <!-- print out data rows -->
+            <td nowrap="nowrap">{$items[item][0].value}</td>
             {section name=piece loop=$items[item]}
-            {if $items[item][piece].name neq 'Links'} 
+            {if $items[item][piece].name neq 'Links' && $items[item][piece].name neq ''} 
                 <td nowrap="nowrap">
                 {if $items[item][piece].name == "First_Acq_Date" || $items[item][piece].name == "Last_QC"}
                     {$items[item][piece].value|date_format}
@@ -64,7 +65,7 @@
     {/section}
     {* Links to files/output types *}
     {section name=typeIdx loop=$outputTypes}
-            <td><a href="mri_browser.php?sessionID={$timepoints[timepointIdx].sessionID}&outputType={if $outputTypes[typeIdx].outputType == 'selected'}native&selectedOnly=1{else}{$outputTypes[typeIdx].outputType|escape:"url"}{/if}&backURL={$backURL|escape:"url"}">{$outputTypes[typeIdx].outputType}</a>
+            <td><a href="main.php?test_name=imaging_browser&subtest=view_session&sessionID={$items[item].sessionID}">{$outputTypes[typeIdx].outputType}</a>
             </td>
     {/section}
                                                 <td><a href="mri_browser.php?sessionID={$timepoints[timepointIdx].sessionID}&backURL={$backURL|escape:"url"}">all types</a></td>

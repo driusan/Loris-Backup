@@ -228,7 +228,6 @@ class NDB_Menu_Filter extends NDB_Menu
             // save filter data in the session
             $oldFormFilters = $_SESSION['State']->getProperty('filter');
             if(is_array($oldFormFilters)) {
-                print_r($this->CheckboxFilters);
 
                 foreach($oldFormFilters as $key => $val) {
                     if(in_array($key, $this->CheckboxFilters)) {

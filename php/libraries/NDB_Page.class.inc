@@ -158,6 +158,8 @@ class NDB_Page extends PEAR
         $smarty = new Smarty_neurodb;
         $renderer = new HTML_QuickForm_Renderer_ArraySmarty($smarty);
         $this->form->accept($renderer);
+        $smarty->ModuleName = $this->name;
+
         $smarty->assign('form', $renderer->toArray());
         $smarty->assign($this->tpl_data);
         $html = $smarty->fetch("form_$this->template.tpl");

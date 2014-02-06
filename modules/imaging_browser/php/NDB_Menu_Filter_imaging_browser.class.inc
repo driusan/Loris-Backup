@@ -100,7 +100,8 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
             "$NewDataSubquery as New_Data",
             "$T1PassSubquery as T1_Passed",
             "$T2PassSubquery as T2_Passed",
-            "'links' as Links"
+            "'links' as Links",
+            's.ID as sessionID'
         );
         $this->order_by = 'c.PSCID, s.Visit_label';
         $this->group_by = 's.ID';
@@ -187,4 +188,30 @@ class NDB_Menu_Filter_imaging_browser extends NDB_Menu_Filter
 
         $this->tpl_data['numOutputTypes'] = count($outputTypes);
     }
+
+    function _setDataTableRows($count)
+    {
+        // print out
+        $x = 0;
+        foreach ($this->list as $item) {
+            //count column
+            $this->tpl_data['items'][$x][0]['value'] = $x + $count;
+
+            //print out data rows
+            $i = 1;
+            foreach ($item as $key => $val) {
+                if($key == 'sessionID') {
+                    $this->tpl_data['items'][$x]['sessionID'] = $val;
+                    continue;
+                }
+                $this->tpl_data['items'][$x][$i]['name'] = $key;
+                $this->tpl_data['items'][$x][$i]['value'] = $val;
+                $i++;
+            }
+            $x++;
+        }
+
+        return true;
+    }
+
 }
