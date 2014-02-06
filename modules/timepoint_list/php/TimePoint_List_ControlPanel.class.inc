@@ -35,6 +35,7 @@ Class TimePoint_List_ControlPanel extends Candidate
         $this->tpl_data['isDataEntryPerson'] = $isDataEntryPerson;
 
         $smarty = new Smarty_neurodb;
+        $smarty->ModuleName="timepoint_list";
         $smarty->assign($this->tpl_data);
         $html = $smarty->fetch("timepoint_list_controlpanel.tpl");
         return $html;
