@@ -49,7 +49,7 @@ if (empty($basePath)) {
 // Now get the file and do file validation
 $Module = $_GET['Module'];
 $File = $_GET['file'];
-if(empty($File)) {
+if (empty($File)) {
     $File = $Module . ".js";
 }
 if (empty($Module) || empty($File)) {
