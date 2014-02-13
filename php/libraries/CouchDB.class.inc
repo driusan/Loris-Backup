@@ -118,6 +118,19 @@ class SocketWrapper
     function write($str)
     {
         fwrite($this->socket, $str);
+        $total = strlen($str);
+        $bytesSent = 0;
+        do {
+            $bytesSentThisTime = fwrite($this->socket, $str, 1000);
+            if($bytesSentThisTime == 0) {
+                throw new Exception("Error writing data");
+            }
+            $bytesSent += $bytesSentThisTime;
+        } while ($bytesSent < $total);
+        /* if(!fwrite($this->socket, $str)) {
+            throw new Exception("abc");
+        }
+         */
     }
 }
 
@@ -257,9 +270,31 @@ class CouchDB
         foreach($headers as $key => $value) {
             $handler->write($key . ':' . $value . "\r\n");
         }
+        $handler->close();
+        $response_split = explode("\r\n\r\n", $response, 2);
+        return trim($response_split[1]);
+   }
+
+   function _postRelativeURL($url, $data, $op = 'POST', $mimeType = 'application/json') {
+        $config = NDB_Config::singleton();
+        $couchconfig = $config->getSetting('CouchDB');
+        $handler = $this->SocketHandler;
+        $handler->setHost($couchconfig['hostname']);
+        $handler->setPort($couchconfig['port']);
+        $handler->open();
+
+        print "hello $url";
+        $handler->write($this->_constructURL($op, $url) . " HTTP/1.1\r\n");
+        print "hi";
+        $handler->write("Host: " . $couchconfig['hostname'] . "\r\n");
+        $handler->write("Connection: close\r\n");
+        $handler->write("Content-Length: " . strlen($data) . "\r\n\r\n");
+        print "dat";
         $handler->write($data);
+        print "done data";
         $response = '';
-        while (!$handler->eof()) {
+        while(!$handler->eof()) {
+
             $response .= $handler->gets();
         }
         $handler->close();
@@ -267,9 +302,6 @@ class CouchDB
         return trim($response_split[1]);
     }
 
-    function _postRelativeURL($url, $data, $op = 'POST') {
-        return $this->_postURL($this->_constructURL($op, $url), $data);
-    }
 
     /**
      * Returns a document from CouchDB database
@@ -278,9 +310,19 @@ class CouchDB
      *
      * @return array An associative array representing the document
      */
-    function getDoc($id)
-    {
-        $json = $this->_getRelativeURL($id);
+    function getDoc($id, $options = array("attachments" => "true")) {
+
+        if(!empty($options)) {
+            if(strpos($id, "?") === false) {
+            $url = $id . "?" . http_build_query($options);
+            } else {
+            $url = $id . "&" . http_build_query($options);
+            }
+            print " URL: $url \n";
+        } else {
+            $url = $id;
+        }
+        $json = $this->_getRelativeURL($url);
         $data = json_decode($json, true);
 
         if (isset($data['error']) && $data['error'] === 'not_found') {
