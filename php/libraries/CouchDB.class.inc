@@ -127,6 +127,7 @@ class SocketWrapper
             }
             $bytesSent += $bytesSentThisTime;
         } while ($bytesSent < $total);
+         */
         /* if(!fwrite($this->socket, $str)) {
             throw new Exception("abc");
         }
@@ -283,15 +284,11 @@ class CouchDB
         $handler->setPort($couchconfig['port']);
         $handler->open();
 
-        print "hello $url";
         $handler->write($this->_constructURL($op, $url) . " HTTP/1.1\r\n");
-        print "hi";
         $handler->write("Host: " . $couchconfig['hostname'] . "\r\n");
         $handler->write("Connection: close\r\n");
         $handler->write("Content-Length: " . strlen($data) . "\r\n\r\n");
-        print "dat";
         $handler->write($data);
-        print "done data";
         $response = '';
         while(!$handler->eof()) {
 
@@ -314,11 +311,10 @@ class CouchDB
 
         if(!empty($options)) {
             if(strpos($id, "?") === false) {
-            $url = $id . "?" . http_build_query($options);
+                $url = $id . "?" . http_build_query($options);
             } else {
-            $url = $id . "&" . http_build_query($options);
+                $url = $id . "&" . http_build_query($options);
             }
-            print " URL: $url \n";
         } else {
             $url = $id;
         }
@@ -425,11 +421,13 @@ class CouchDB
         $m_original = $original_doc;
         unset($m_original['_id']);
         unset($m_original['_rev']);
-        if ($m_original === $doc) {
-            return 'unchanged';
+        unset($m_original['_attachments']);
+        if($m_original === $doc) {
+            return 'unchanged contents';
         }
 
         $doc['_rev'] = $original_doc['_rev'];
+        $doc['_attachments'] = $original_doc['_attachments'];
         $this->putDoc($id, $doc);
         return 'modified';
     }
