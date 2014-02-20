@@ -19,8 +19,6 @@ if(PEAR::isError($result)) {
         die("Could not connect to database: ".$result->getMessage());
 }
 $sites =array('2','3','4','5'); 
-//print_r($sites);
-//$sites = array('2');
 foreach($sites as $site) {
 $run = new QC_Checks($site);
  $run->run();
