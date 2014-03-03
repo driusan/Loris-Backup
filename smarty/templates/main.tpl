@@ -264,7 +264,6 @@
                 {/if}
 
                {* Finally, include the workspace! *}
-                  of the 
                     <!-- included file -->        
                     <table width="90%">
                         <tr>
