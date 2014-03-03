@@ -263,13 +263,9 @@
                     </table>
                 {/if}
 
-               {* Finally, include the workspace! *}
-                    <!-- included file -->        
-                    <table width="90%">
-                        <tr>
-                            <td>{$workspace}</td>
-                        </tr>
-                    </table>
+               {* Finally, include the workspace!*}
+                    <div id="workspace">{$workspace}</div>
+
             {* End if error_message or test_name not set block, close all
                the main table tags so that we can start the footer tags*}
             {/if} 

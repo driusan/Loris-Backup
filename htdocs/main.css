@@ -712,3 +712,7 @@ vertical-align: bottom;
     font-weight: bold;
     text-decoration: none;
 }
+
+#workspace {
+    width: 90%;
+}
