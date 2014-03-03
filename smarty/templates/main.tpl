@@ -128,10 +128,6 @@
         </table>
     {* End if dynamic tabs. *}
     {/if}
-
-        {* Is this image necessary? *}
-        <!--img src="images/title_background.jpg" colspan="2" width="100%" height="2"-->
-        
         <table border="0" cellpadding="3" cellspacing="2" width="100%" class="mainlayout">
             <tr>
             {if $lastURL != ""}
@@ -149,27 +145,13 @@
                 <!-- Start workspace area -->
                 {if $crumbs != "" && $dynamictabs neq "dynamictabs"}
                     <!-- bread crumb -->
-                    {* Why is this a table instead of a div? *}
-                    <table width="100%" border="0" cellpadding="3" cellspacing="4">
-                        <tr>
-                            <th class="banner" align="left">
-                                {section name=crumb loop=$crumbs}
-                                {* FIXME: These should be fixed in the breadcrumb class instead of
-                                   having if/else logic in the template here *}
-                                    {if $test_name == "conflicts_resolve"}
-                                        <a href="main.php/{$crumbs[crumb].query}">Conflicts Resolver</a> 
-                                    {elseif $test_name == "statistics_dd_site"}
-                                        <a href="main.php/{$crumbs[crumb].query}">Double Data Entry Site Statistics</a>
-                                    {else}
-                                        <a href="main.php?{$crumbs[crumb].query}">{$crumbs[crumb].text}</a>
-                                    {/if}
-                                    {* Add the > separator for each breadcrumb, unless
-                                       it's on the last crumb *}
-                                    {if not $smarty.section.crumb.last}&gt; {/if}
-                                {/section}
-                            </th>
-                        </tr>
-                    </table>
+                    <div id="breadcrumb">
+                        {section name=crumb loop=$crumbs}
+                            <a href="main.php?{$crumbs[crumb].query}">{$crumbs[crumb].text}</a>
+                            {if not $smarty.section.crumb.last}&gt; {/if}
+                        {/section}
+
+                    </div>
                 {/if}
 
             {if $error_message != ""}
