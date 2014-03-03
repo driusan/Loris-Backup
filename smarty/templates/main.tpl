@@ -82,8 +82,8 @@
                         {$control_panel}
                     </ul>
                 {/if}
-            {/if}
                 </td>
+            {/if}
                 <!-- main page table tags -->
                 <td width="100%" class="bgGradient" valign="top">
                 <!-- Start workspace area -->
@@ -128,32 +128,23 @@
     </table>
     {* Don't include the footer if page is dynamically loaded via ajax *}
     {if $dynamictabs neq "dynamictabs"}
-    <table class="MainFooter" align="center">
-        <tr>
-            <td width="100%">
-                {* Is this needed or can we just give the ul an id and style
-                   it *}
-                <div id="footerLinks">
-                    <ul id="navlist" style="margin-top: 5px; margin-bottom: 2px;" >
-                        <li id="active">|</li>
-                        {foreach from=$links item=link}
-                        <li><a href="{$link.url}" target="{$link.windowName}">{$link.label}</a> | </li>
-                        {/foreach}
-                    </ul>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td align="center" colspan="1" style="color:#fff" >
-                Powered by LORIS &copy; 2013. All rights reserved.
-            </td>
-        </tr>
-        <tr>
-            <td align="center" colspan="1">
-                <a href="http://cbrain.mcgill.ca" style="color: #348b8d;" target="_blank">Created by ACElab</a>
-            </td>
-        </tr>
-    </table>
+    <div class="MainFooter">
+        <ul id="navlist" style="margin-top: 5px; margin-bottom: 2px;" >
+            {foreach from=$links item=link name=links}
+            <li>
+                <a href="{$link.url}" target="{$link.windowName}">{$link.label}</a>
+                {if not $smarty.foreach.links.last} | {/if}
+            </li>
+            {/foreach}
+        </ul>
+
+        <p id="poweredby" class="FooterText">
+            Powered by LORIS &copy; 2013. All rights reserved.
+        </p>
+        <p id="createdby" class="FooterText">
+            <a href="http://cbrain.mcgill.ca" style="color: #348b8d;" target="_blank">Created by ACElab</a>
+        </p>
+    </div>
     {* End dynamic tabs if *}
     {/if}
     </div>

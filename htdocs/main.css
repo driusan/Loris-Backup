@@ -484,6 +484,11 @@ background-position: 55% 250px;
     background: #08245b;
     vertical-align: bottom;
 }
+
+.FooterText {
+    padding: 0px;
+    margin: 2px;
+}
 .mriFooter {
     position:absolute;
     bottom: 0;
