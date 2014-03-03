@@ -235,6 +235,12 @@ if (!empty($_REQUEST['sessionID'])) {
     }
 }
 
+if(!empty($_REQUEST['candID'])) {
+    $renderer = new Smarty_neurodb;
+    $renderer->assign($tpl_data);
+    $tpl_data['candidateTables'] = $renderer->fetch('table_candidate.tpl');
+    //$tpl_data['candidateTables'] = 'abc';
+}
 $timer->setMarker('Drew the top workspace tables');
 
 //--------------------------------------------------
