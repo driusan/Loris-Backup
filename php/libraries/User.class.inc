@@ -424,8 +424,9 @@ class User extends UserPermissions
         $userobj['password'] = $password;
 
 
-        $response = $cdb->_postURL("PUT /_users/org.couchdb.user:" . $username,
+        $response = $cdb->_postURL("/_users/org.couchdb.user:" . $username, 
             json_encode($userobj),
+            "PUT",
             $auth
         );
     }
