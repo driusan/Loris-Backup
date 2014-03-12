@@ -118,20 +118,6 @@ class SocketWrapper
     function write($str)
     {
         fwrite($this->socket, $str);
-        $total = strlen($str);
-        $bytesSent = 0;
-        do {
-            $bytesSentThisTime = fwrite($this->socket, $str, 1000);
-            if($bytesSentThisTime == 0) {
-                throw new Exception("Error writing data");
-            }
-            $bytesSent += $bytesSentThisTime;
-        } while ($bytesSent < $total);
-         */
-        /* if(!fwrite($this->socket, $str)) {
-            throw new Exception("abc");
-        }
-         */
     }
 }
 
