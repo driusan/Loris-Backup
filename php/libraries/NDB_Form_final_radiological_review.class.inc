@@ -124,6 +124,8 @@ class NDB_Form_final_radiological_review extends NDB_Form
         $this->addScoreColumn('Original_Incidental_Findings', 'Original Incidental Findings:', '');
         $this->addScoreColumn('Original_Examiner', 'Original Radiologist/Reviewer:', 'Unknown');
 
+        $this->form->addElement('static', 'radiology_instrument', '', '');
+
         $this->form->addElement('static', 'history', '', '');
 
         if ($this->_has_perm('edit_final_radiological_review') == false) {
@@ -201,6 +203,14 @@ class NDB_Form_final_radiological_review extends NDB_Form
                 );
             }
 
+            $radiology_instrument = NDB_BVL_Instrument::factory(
+                'radiology_review',
+                $this->identifier,
+                ''
+            );
+
+            $radiology_instrument->form->freeze();
+            $htmlReview = $radiology_instrument->display();
 
             $history = $DB->pselect(
                 'SELECT userID, changeDate, col, old, new FROM history 
@@ -221,9 +231,11 @@ class NDB_Form_final_radiological_review extends NDB_Form
             $defaults = array_merge(
                 $final_review, 
                 $original_review, 
-                array( 'history' => $history_display)
+                array( 'history' => $history_display,
+                    'radiology_instrument' => $htmlReview)
             );
 
+            $defaults['radiology_instrument'] = $htmlReview;
             if ($defaults['Final_Review_Results'] !=  $defaults['Final_Review_Results2'] 
                 || $defaults['Final_Exclusionary'] != $defaults['Final_Exclusionary2'] 
                 || $defaults['SAS'] != $defaults['SAS2'] 

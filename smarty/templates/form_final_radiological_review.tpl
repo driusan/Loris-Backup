@@ -99,6 +99,8 @@
 	
 {$form.hidden}
 </form>
+{$form.radiology_instrument.html}
+
 <h1>Change Log</h1>
 <table class="std">
 <tr>
