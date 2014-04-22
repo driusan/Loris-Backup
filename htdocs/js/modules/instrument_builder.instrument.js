@@ -1,4 +1,4 @@
-/*global document: false, $: false, alert: false, Enumize: false*/
+/*global document: false, $: false, alert: false, Enumize: false, URL: false, Blob: false, addDropdownOption: false, addQuestion: false, clearDropdownOption: false, FileReader: false*/
 var Instrument = {
     validate: function () {
         "use strict";
@@ -47,7 +47,7 @@ var Instrument = {
         dataURL = URL.createObjectURL(contentBlob);
 
         el = document.createElement("a");
-        el.download=name + ".linst";
+        el.download = name + ".linst";
         el.href = dataURL;
         el.click();
         URL.revokeObjectURL(dataURL);
@@ -188,87 +188,97 @@ var Instrument = {
             }
         }
         return content;
-   },
-   load: function () {
+    },
+    load: function () {
+        "use strict";
         var ParseSelectOptions = function (opt, type) {
-            if(!type) {
-                type = ''
+            var options, i, keyval, option, val;
+            if (!type) {
+                type = '';
             }
-            var options = opt.split("{-}");
-            for(var i = 0; i < options.length; i++) {
-                var option = options[i]
-                var keyval = option.split("=>");
-                if(keyval[0] != 'NULL' && keyval[1]) {
+            options = opt.split("{-}");
+            for (i = 0; i < options.length; i += 1) {
+                option = options[i];
+                keyval = option.split("=>");
+                if (keyval[0] !== 'NULL' && keyval[1]) {
                     // hack off the ' at the start and end
-                    val = keyval[1].substr(1, keyval[1].length-2);
+                    val = keyval[1].substr(1, keyval[1].length - 2);
                     // Don't add "not_answered", because save automagically adds it.
-                    if(val != 'Not Answered') {
+                    if (val !== 'Not Answered') {
                         document.getElementById("new" + type + "SelectOption").value = val;
                         //addDropdownOption("multi");
                         addDropdownOption(type);
                     }
                 }
             }
-
-        }       
-        var ParseInstrument = function() {
-            table = document.getElementById("workspace")
-            $("table#workspace tr td").each(function() {
+        }, ParseInstrument = function () {
+            var i, table, lines, pieces, dateIdx;
+            table = document.getElementById("workspace");
+            $("table#workspace tr td").each(function () {
                 $(this).closest("tr").remove();
             });
-            for(var i = 1; i < table.rows.length; i++) {
-                table.deleteRow(1)
+            for (i = 1; i < table.rows.length; i += 1) {
+                table.deleteRow(1);
             }
             lines = this.result.split("\n");
-            for(var i = 0; i < lines.length; i++) {
+            for (i = 0; i < lines.length; i += 1) {
                 pieces = lines[i].split("{@}");
-                if(pieces[1] == "Date_taken" || pieces[1] == "Examiner" || pieces[1] == "Candidate_Age" || pieces[1] == "Window_Difference" || 
-                        (pieces[1] && pieces[1].indexOf && pieces[1].indexOf("_status") >= 0)) {
-                    continue;
+                if (pieces[1] === "Date_taken"
+                        || pieces[1] === "Examiner"
+                        || pieces[1] === "Candidate_Age"
+                        || pieces[1] === "Window_Difference"
+                        || (pieces[1] && pieces[1].indexOf && pieces[1].indexOf("_status") >= 0)) {
+                            continue;
                 }
 
-                if(pieces[0] == 'date') {
+                if (pieces[0] === 'date') {
                     dateIdx = pieces[1].indexOf("_date");
-                    if(dateIdx >= 0) {
+                    if (dateIdx >= 0) {
                         pieces[1] = pieces[1].substring(0, dateIdx);
                     }
                 }
-                switch(pieces[0]) {
-                    case "table":
-                        document.getElementById("filename").value = pieces[1]; continue;
-                    case "title":
-                        document.getElementById("longname").value = pieces[1]; continue;
-                    case "text":
-                        $("#textbox").click(); break;
-                    case "selectmultiple":
-                        $("#multiselect").click();
-                        ParseSelectOptions(pieces[3], "multi");
+                switch (pieces[0]) {
+                case "table":
+                    document.getElementById("filename").value = pieces[1];
+                    continue;
+                case "title":
+                    document.getElementById("longname").value = pieces[1];
+                    continue;
+                case "text":
+                    $("#textbox").click();
+                    break;
+                case "selectmultiple":
+                    $("#multiselect").click();
+                    ParseSelectOptions(pieces[3], "multi");
+                    break;
+                case "select":
+                    $("#dropdown").click();
+                    ParseSelectOptions(pieces[3]);
+                    break;
+                case "header":
+                    // lots of things are saved as "header".. need to do
+                    // a little detective work
+                    if (pieces[1]) {
+                        $("#scored").click();
                         break;
-                    case "select":
-                        $("#dropdown").click();
-                        ParseSelectOptions(pieces[3]);
-                        break;
-                    case "header":
-                        // lots of things are saved as "header".. need to do
-                        // a little detective work
-                        if(pieces[1]) {
-                            $("#scored").click(); break;
-                        }
-                        $("#header").click(); break;
-                    case "static":
-                        if(pieces[1]) {
-                           $("#scored").click(); break;
+                    }
+                    $("#header").click();
+                    break;
+                case "static":
+                    if (pieces[1]) {
+                        $("#scored").click();
+                    } else {
+                        if (pieces[2] === '<br />') {
+                            $("#line").click();
                         } else {
-                           if(pieces[2] == '<br />') {
-                               $("#line").click(); break;
-                           } else {
-                               $("#label").click(); break;
-                           }
+                            $("#label").click();
                         }
-                    default:
-                        $("#" + pieces[0]).click(); break;
-                        break;
-                        
+                    }
+                    break;
+                default:
+                    $("#" + pieces[0]).click();
+                    break;
+
                 }
 
                 document.getElementById("questionName").value = pieces[1];
@@ -278,12 +288,12 @@ var Instrument = {
                 document.getElementById("questionName").value = '';
                 document.getElementById("questionText").value = '';
             }
-        }
-
-        var file = document.getElementById("instfile").files[0];
-        var reader = new FileReader();
+        },
+            file = document.getElementById("instfile").files[0],
+            reader = new FileReader(),
+            data;
         reader.onload = ParseInstrument;
-        var data = reader.readAsText(file);
+        data = reader.readAsText(file);
         alert("Instrument Loaded");
     }
-}
+};
