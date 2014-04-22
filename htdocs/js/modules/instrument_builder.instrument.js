@@ -1,4 +1,4 @@
-/*global document: false, $: false, alert: false, saveAs: false, Enumize: false*/
+/*global document: false, $: false, alert: false, Enumize: false*/
 var Instrument = {
     validate: function () {
         "use strict";
@@ -35,20 +35,22 @@ var Instrument = {
 
     save: function () {
         "use strict";
-        var valid = this.validate(), content, name, fs;
+        var valid = this.validate(), content, name, fs, contentBlob, dataURL, el;
         if (!valid) {
             return;
         }
         content = this.render();
         name = document.getElementById("filename").value || "instrument";
 
-        fs = saveAs(content.getBlob("text/plain;charset=utf-8"), name + ".linst");
-        fs.onwriteend = function () {
-            alert("Saved file");
-        };
-        fs.onwritestart = function () {
-            alert("Saving " + name + ".linst");
-        };
+        contentBlob = new Blob([content], { type: "text/plain"});
+
+        dataURL = URL.createObjectURL(contentBlob);
+
+        el = document.createElement("a");
+        el.download=name + ".linst";
+        el.href = dataURL;
+        el.click();
+        URL.revokeObjectURL(dataURL);
     },
     render: function () {
         "use strict";
