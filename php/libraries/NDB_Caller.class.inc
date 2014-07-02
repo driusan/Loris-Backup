@@ -73,14 +73,26 @@ class NDB_Caller extends PEAR
             // Modules can not have instruments or reliability.
             set_include_path($base . "modules/$test_name:" . get_include_path() );
             
-            if(empty($subtest)
-                && $this->existsAndRequire($base."modules/$test_name/php/NDB_Menu_Filter_$test_name.class.inc") 
+            $submenu = null;
+            if(!empty($_REQUEST['submenu'])) {
+                $submenu = $_REQUEST['submenu'];
+                $subtest = $submenu;
+            }
+            print "Hello";
+            if(
+                (empty($subtest) && $submenu === null && $this->existsAndRequire($base."modules/$test_name/php/NDB_Menu_Filter_$test_name.class.inc")) 
+                || ($submenu !== null && $this->existsAndRequire($base."modules/$test_name/php/NDB_Menu_Filter_$submenu.class.inc"))
             ) {
+                print "Hi1!!";
                 // No subtest, load the menu
 
  
                 $mode = isset($_REQUEST['mode']) ? $_REQUEST['mode'] : '';
-                $html = $this->loadMenu($test_name, $mode);
+                if($submenu !== null) {
+                    $html = $this->loadMenu($submenu, $mode);
+                } else {
+                    $html = $this->loadMenu($test_name, $mode);
+                }
                 if (Utility::isErrorX($html)) {
                     return PEAR::raiseError($html->getMessage());
                 }
@@ -344,6 +356,7 @@ class NDB_Caller extends PEAR
      * @return bool     true if file exists, otherwise false
      */
     function existsAndRequire($library) {
+        print "Hello: $library\nasdf";
         if (file_exists($library)) {
             require_once $library;
             return true;
