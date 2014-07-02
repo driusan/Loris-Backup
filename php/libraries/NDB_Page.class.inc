@@ -155,7 +155,7 @@ class NDB_Page extends PEAR
         $this->form->applyFilter('__ALL__', 'trim');
 
         // display the HTML_Quickform object
-        $smarty = new Smarty_neurodb;
+        $smarty = new Smarty_neurodb($this->name);
         $renderer = new HTML_QuickForm_Renderer_ArraySmarty($smarty);
         $this->form->accept($renderer);
         $smarty->ModuleName = $this->name;
