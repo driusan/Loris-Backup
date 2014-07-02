@@ -183,12 +183,7 @@ class NDB_Menu_Filter_timepoint_list extends NDB_Menu_Filter
             } // end list
         }
 
-        // Add buttons to tpl_data that used to be the control panel, but 
-        // no longer are.
-        if(isset($_REQUEST['candID'])) {
-            $controlPanel = new TimePoint_List_ControlPanel($_REQUEST['candID']);
-            $this->tpl_data['controlPanel'] = $controlPanel->display();
-        }
+        $this->tpl_data['actions'] = $this->getActionButtons();
     }
 
     function _determinePreviousStage($sessionID)
@@ -210,13 +205,9 @@ class NDB_Menu_Filter_timepoint_list extends NDB_Menu_Filter
         return  'Not Started';
     }
 
-    /*
-     * This is no longer really a control panel, so using it as one looks really
-     * weird
-    function getControlPanel() {
+    function getActionButtons() {
         $controlPanel = new TimePoint_List_ControlPanel($_REQUEST['candID']);
         return $controlPanel->display();
     }
-     */
 }
 ?>

@@ -4,7 +4,6 @@
  */
 require_once('smarty3/Smarty.class.php');
 class Smarty_neurodb extends Smarty {
-<<<<<<< HEAD
     var $template_dir;
     var $project_template_dir;
 
