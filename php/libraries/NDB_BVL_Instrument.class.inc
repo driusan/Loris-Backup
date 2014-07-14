@@ -74,7 +74,7 @@ class NDB_BVL_Instrument extends NDB_Page
 
     /**
      * Either PHP or LINST depending on what
-     * type of instrument we're workign with
+     * type of instrument we're working with
      */
     var $InstrumentType = 'PHP';
 
@@ -112,13 +112,6 @@ class NDB_BVL_Instrument extends NDB_Page
      */
     var $ValidityRequired = true;
 
-
-    /**
-     * An array of questions and their types for LINST style instruments,
-     * useful so that we can look up if it's in a group or not for when
-     * registering rules
-     */
-    var $LinstQuestions = array();
 
     /**
      * True if the page is being previewed from the instrument builder,
@@ -859,19 +852,9 @@ class NDB_BVL_Instrument extends NDB_Page
             if($elvalue=="" || $flag==false){
                 if($this->XINDebug){echo "<p><b>$elname</b><br> ";} //debugging code
                 if(!empty($this->XINRules[$elname])){
-                    if($this->InstrumentType === 'LINST') {
-                        $registered_rules = $this->XINRules[$elname];
-                        foreach($registered_rules as $registered_rule) {
-                            $result=$this->XINRunElementRules($elname, $elements, $registered_rule);
-                            if(is_array($result)) {
-                                $errors+=$result;
-                            }
-                        }
-                    } else {
-                        $result=$this->XINRunElementRules($elname, $elements, $this->XINRules[$elname]);
-                        if(is_array($result)){
-                            $errors+=$result;
-                        }
+                    $result=$this->XINRunElementRules($elname, $elements, $this->XINRules[$elname]);
+                    if(is_array($result)){
+                        $errors+=$result;
                     }
                 } else if(substr($elname,-7)!="_status" && !in_array($elname,array("page","subtest"))){
                     $errors[$elname]="Required.";
