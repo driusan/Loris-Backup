@@ -722,19 +722,6 @@ class NDB_BVL_Instrument extends NDB_Page
         return $this->commentID;
     }
     
-    
-    /**
-     * freezes the current form
-     *
-     * @return void
-     * @access public
-     */
-    function freeze()
-    {
-        $this->form->freeze();
-    }
-    
-    
     /**
      * gets the date of administration of an instrument instance - caches to reduce DB hits
      *

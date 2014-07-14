@@ -123,6 +123,19 @@ class NDB_Page extends PEAR
         return $this->form->createElement('password', $field, $label, $attr);
     }
 
+
+    /**
+     * freezes the current form
+     * 
+     * @return void
+     * @access public
+     */
+    function freeze()
+    {
+        $this->form->freeze();
+    }
+
+
     /**
      * Displays the form
      *
