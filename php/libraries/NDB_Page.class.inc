@@ -6,6 +6,9 @@ include_once ('HTML/QuickForm/Renderer/Default.php');
 
 class NDB_Page extends PEAR
 {
+    var $form;
+    var $commentID;
+
     function _setupPage($name, $page, $identifier, $commentID, $formname) {
         $this->form = new HTML_QuickForm($formname);
         $this->name = $name;

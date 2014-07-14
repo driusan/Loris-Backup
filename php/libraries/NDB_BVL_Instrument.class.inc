@@ -16,27 +16,12 @@ include_once ('HTML/QuickForm/Renderer/Default.php');
  */
 class NDB_BVL_Instrument extends NDB_Page
 {
-
-    /**
-    * HTML_Quickform object
-    *
-    * @access private
-    */
-    var $form;
-
     /**
     * test name (short name), equivalent to test_names.Test_name
     *
     * @access private
     */
     var $testName;
-
-    /**
-    * instrument instance CommentID
-    *
-    * @access private
-    */
-    var $commentID;
 
     /**
     * database table containing data referenced by $this->commentID
@@ -257,20 +242,6 @@ class NDB_BVL_Instrument extends NDB_Page
     function setup($commentID, $page)
     { 
        $this->_setupPage(null, $page, null, $commentID, 'test_form'); 
-    /**       
-     //   $this->form = new HTML_Quickform('test_form');
-       // $this->page = $page;            // page label (number or
-        // string - used by
-        // user-defined child classes)
-
-        // set the object properties
-        $this->testName = "";           // test_names.Test_name
-        $this->table = '';              // name of table containing
-        // data keyed by commentID
-       // $this->commentID = $commentID;
-
-        // required fields for data entry completion status
-        $this->_requiredElements = array();    */ 
     }
 
     /**
