@@ -1,6 +1,20 @@
 <?php
 /**
- * @package main
+ * The main entry point for an end user into the Loris database. This file sets
+ * all the variables that are necessary for Loris to render the page and 
+ * (via NDB_Caller) dispatches to the appropriate PHP class to handle the
+ * specifics request of the current request.
+ *
+ * It also ensures that the correct HTTP header is returned.
+ *
+ * PHP Version 5
+ *
+ * @category Behavioural
+ * @package  Loris
+ * @author   The Loris Team <info-loris.mni@mcgill.ca>
+ * @license  Loris license
+ * @link     https://www.github.com/aces/Loris-Trunk/
+ *
  */
 set_include_path(get_include_path().":../project/libraries:../php/libraries:");
 ini_set('default_charset', 'utf-8');
@@ -27,10 +41,21 @@ $timer->setMarker('Loaded client');
 
 //--------------------------------------------------
 
-// set URL params
-function tplFromRequest($param) {
+/**
+ * Extract parameter from request param and sets the tpl_data parameter
+ * for that value. This function does the necessary error checking to ensure
+ * that PHP errors/warnings are not thrown and the value is set to empty if
+ * the parameter was not set.
+ *
+ * @param string $param The name of the variable to be extracted from HTTP
+ *                      request.
+ *
+ * @return none, but as a side effect populates $tpl_data
+ */
+function tplFromRequest($param)
+{
     global $tpl_data;
-    if(isset($_REQUEST[$param])) {
+    if (isset($_REQUEST[$param])) {
         $tpl_data[$param] = $_REQUEST[$param];
     } else {
         $tpl_data[$param] = '';
@@ -69,21 +94,28 @@ if (Utility::isErrorX($site)) {
 // the the list of tabs, their links and perms
 $mainMenuTabs = $config->getSetting('main_menu_tabs');
 
-foreach(Utility::toArray($mainMenuTabs['tab']) AS $myTab){
+foreach (Utility::toArray($mainMenuTabs['tab']) AS $myTab) {
     $tpl_data['tabs'][]=$myTab;
-    foreach(Utility::toArray($myTab['subtab']) AS $mySubtab)
-    {
+    foreach (Utility::toArray($myTab['subtab']) AS $mySubtab) {
         // skip if inactive
-        if ($mySubtab['visible']==0) continue;
+        if ($mySubtab['visible']==0) {
+            continue;
+        }
 
         // replace spec chars
-        $mySubtab['link'] = str_replace("%26","&",$mySubtab['link']);
+        $mySubtab['link'] = str_replace("%26", "&", $mySubtab['link']);
         
         // check for the restricted site access
-        if (isset($site) && ($mySubtab['access']=='all' || $mySubtab['access']=='site' && $site->isStudySite())) {
+        if (isset($site) 
+            && ($mySubtab['access']=='all' 
+            || $mySubtab['access']=='site' 
+            && $site->isStudySite())
+        ) {
 
             // if there are no permissions, allow access to the tab
-            if (!is_array($mySubtab['permissions']) || count($mySubtab['permissions'])==0) {
+            if (!is_array($mySubtab['permissions']) 
+                || count($mySubtab['permissions'])==0
+            ) {
 
                 $tpl_data['subtab'][]=$mySubtab;
 
@@ -93,7 +125,9 @@ foreach(Utility::toArray($mainMenuTabs['tab']) AS $myTab){
                 foreach ($mySubtab["permissions"] as $permissions) {
     
                     // turn into an array
-                    if (!is_array($permissions)) $permissions = array($permissions);
+                    if (!is_array($permissions)) {
+                        $permissions = array($permissions);
+                    }
 
                     // test and grant access to button with 1st permission
                     foreach ($permissions as $permission) {
@@ -115,7 +149,8 @@ $timer->setMarker('Drew user information');
 //--------------------------------------------------
 
 // configure browser args for the mri browser
-// !!! array URL args -- need to correct query in mri_browser to accept candidate data
+// !!! array URL args -- need to correct query in mri_browser to accept
+// candidate data
 $argstring = '';
 if (!empty($_REQUEST['candID'])) {
     $argstring .= "filter%5BcandID%5D=".$_REQUEST['candID']."&";
@@ -124,7 +159,9 @@ if (!empty($_REQUEST['candID'])) {
 if (!empty($_REQUEST['sessionID'])) {
     $timePoint =& TimePoint::singleton($_REQUEST['sessionID']);
     if (Utility::isErrorX($timePoint)) {
-        $tpl_data['error_message'][] = "TimePoint Error (".$_REQUEST['sessionID']."): ".$timePoint->getMessage();
+        $tpl_data['error_message'][] 
+            = "TimePoint Error (".$_REQUEST['sessionID']."): "
+              . $timePoint->getMessage();
     } else {
         $argstring .= "filter%5Bm.VisitNo%5D=".$timePoint->getVisitNo()."&";
     }
@@ -139,11 +176,11 @@ $timer->setMarker('Configured browser arguments for the MRI browser');
 $paths = $config->getSetting('paths');
 
 if (!empty($TestName)) {
-    if(file_exists($paths['base'] . "htdocs/js/modules/$TestName.js")) {
+    if (file_exists($paths['base'] . "htdocs/js/modules/$TestName.js")) {
         $tpl_data['test_name_js'] = "js/modules/$TestName.js";
     }
-    if(file_exists("css/instruments/$TestName.css")) { 
-       $tpl_data['test_name_css'] = "$TestName.css";
+    if (file_exists("css/instruments/$TestName.css")) { 
+        $tpl_data['test_name_css'] = "$TestName.css";
     }
 }
 
@@ -153,7 +190,9 @@ if (!empty($TestName)) {
 if (!empty($_REQUEST['candID'])) {
     $candidate =& Candidate::singleton($_REQUEST['candID']);
     if (Utility::isErrorX($candidate)) {
-        $tpl_data['error_message'][] = "Candidate Error (".$_REQUEST['candID']."): ".$candidate->getMessage();
+        $tpl_data['error_message'][] 
+            = "Candidate Error (".$_REQUEST['candID']."): "
+              . $candidate->getMessage();
     } else {
         $tpl_data['candidate'] = $candidate->getData();
     }
@@ -162,12 +201,14 @@ if (!empty($_REQUEST['candID'])) {
 // get time point data
 if (!empty($_REQUEST['sessionID'])) {
     $timePoint =& TimePoint::singleton($_REQUEST['sessionID']);
-    if($config->getSetting("SupplementalSessionStatus")) {
+    if ($config->getSetting("SupplementalSessionStatus")) {
         $tpl_data['SupplementalSessionStatuses'] = true;
     }
     
     if (Utility::isErrorX($timePoint)) {
-        $tpl_data['error_message'][] = "TimePoint Error (".$_REQUEST['sessionID']."): ".$timePoint->getMessage();
+        $tpl_data['error_message'][] 
+            = "TimePoint Error (".$_REQUEST['sessionID']."): "
+              . $timePoint->getMessage();
     } else {
         $tpl_data['timePoint'] = $timePoint->getData();
     }
@@ -179,18 +220,31 @@ $timer->setMarker('Drew the top workspace tables');
 
 // load the menu or instrument
 $caller =& NDB_Caller::singleton();
-function HandleError($error) {
-    switch($error->code) {
-        case 404: header("HTTP/1.1 404 Not Found"); break;
-        case 403: header("HTTP/1.1 403 Forbidden"); break;
+/**
+ * Error handler to handle a PEAR_Error and ensure
+ * that the right HTTP response code is returned
+ *
+ * @param PEAR_Error $error The PEAR error object that was thrown
+ *
+ * @return none
+ */
+function handleError ($error)
+{
+    switch ($error->code) {
+    case 404:
+        header("HTTP/1.1 404 Not Found");
+        break;
+    case 403:
+        header("HTTP/1.1 403 Forbidden");
+        break;
     }
-    if(empty($error->code)) {
+    if (empty($error->code)) {
         //print $error->message;
     }
 }
-$caller->setErrorHandling(PEAR_ERROR_CALLBACK, 'HandleError');
+$caller->setErrorHandling(PEAR_ERROR_CALLBACK, 'handleError');
 $workspace = $caller->load($TestName, $subtest);
-if(isset($caller->controlPanel)) {
+if (isset($caller->controlPanel)) {
     $tpl_data['control_panel'] = $caller->controlPanel;
 
 }
@@ -212,7 +266,7 @@ if (Utility::isErrorX($crumbs)) {
 } else {
     $tpl_data['crumbs'] = $crumbs;
     parse_str($crumbs[0]['query'], $parsed);
-    if(isset($parsed['test_name'])) {
+    if (isset($parsed['test_name'])) {
         $tpl_data['top_level'] = $parsed['test_name'];
     } else {
         $tpl_data['top_level'] = '';
@@ -229,10 +283,10 @@ $tpl_data['lastURL'] = $_SESSION['State']->getLastURL();
 
 //Display the links, as specified in the config file
 $links=$config->getSetting('links');
-foreach(Utility::toArray($links['link']) AS $link){
+foreach (Utility::toArray($links['link']) AS $link) {
     $LinkArgs = '';
     $BaseURL = $link['@']['url'];
-    if(isset($link['@']['args'])) {
+    if (isset($link['@']['args'])) {
         $LinkArgs = $link_args[$link['@']['args']];
     }
     $LinkLabel = $link['#'];
@@ -269,4 +323,3 @@ if ($config->getSetting('showTiming')) {
 
 //print '<pre>'; print_r($tpl_data); print '</pre>';
 ?>
-
