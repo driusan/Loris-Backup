@@ -121,7 +121,7 @@ class NDB_Form_create_timepoint extends NDB_Form
             $this->addRule('visitLabel', 'Visit label is required', 'required');
         }
 
-        $this->form->addFormRule(array(&$this, '_validate'));
+        //$this->form->addFormRule(array(&$this, '_validate'));
     }
     
     

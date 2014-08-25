@@ -1,8 +1,8 @@
 <?php
 
 require_once "PEAR.php";
-require_once "HTML/QuickForm.php";
-include_once ('HTML/QuickForm/Renderer/Default.php');
+require_once "HTML/QuickForm2.php";
+include_once ('HTML/QuickForm2/Renderer/Array.php');
 
 class NDB_Page extends PEAR
 {
@@ -34,7 +34,7 @@ class NDB_Page extends PEAR
     var $defaults = array();
 
     function _setupPage($name, $page, $identifier, $commentID, $formname) {
-        $this->form = new HTML_QuickForm($formname);
+        $this->form = new HTML_QuickForm2($formname);
         $this->name = $name;
         $this->page = $page;
         $this->identifier = $identifier;
@@ -64,7 +64,7 @@ class NDB_Page extends PEAR
 
     function addSelect($name, $label, $options, $optional=array()) {
         $optional = array_merge(array('class' => 'form-control input-sm'), $optional);
-        $this->form->addElement('select', $name, $label, $options, $optional);
+        $this->form->addElement('select', $name, $optional, array('label' => $label, 'options' => $options))->setId($name);
     }
 
     /**
@@ -86,7 +86,7 @@ class NDB_Page extends PEAR
 
     function addBasicText($field, $label, $options=array()) {
         $options = array_merge(array('class' => 'form-control input-sm'), $options);
-        $this->form->addElement('text', $field, $label, $options);
+        $this->form->addElement('text', $field, $options, array('label' => $label))->setId($field);
     }
 
     function addBasicTextArea($field, $label, $specifications=array('class' => 'form-control input-sm')) {
@@ -94,11 +94,19 @@ class NDB_Page extends PEAR
     }
 
     function addBasicDate($field, $label, $options=array(), $attr=array('class' => 'form-control input-sm', 'style' => 'max-width:33%; display:inline-block;')) {
-        $this->form->addElement('date', $field, $label, $options, $attr);
+        $this->form->addElement(
+            'date',
+            $field,
+            null,
+            array_merge($options, array('label' => $label))
+        )->setId($field);
     }
  
-    function addHidden($label, $attributes=null) {
-        $this->form->addElement('hidden', $label, $attributes);
+    function addHidden($name, $value=null, $attributes=null) {
+        $this->form->addElement('hidden', $name, $attributes);
+        if($value !== null) {
+            $this->defaults[$name] = $value;
+        }
     }
 
     function addTextAreaGroup($field, $label,$not_answered_options=array('' =>'', 'not_answered' => 'Not Answered')) {
@@ -111,22 +119,27 @@ class NDB_Page extends PEAR
 
     }
     function addRule($element, $message, $type, $format=null) {
-        $this->form->addRule($element, $message, $type, $format);
+        $elementEl = $this->form->getElementById($element);
+        $elementEl->addRule($type, $message, $format);
     }
 
     function addGroupRule($group, $arg1, $type='', $format=null) {
-        $this->form->addGroupRule($group, $arg1, $type, $format);
+        $groupEl = $this->form->getElementById($group);
+        $groupEl->addRule($type, $arg1, $format);
     }
 
     function addGroup($elements, $name, $label, $separator, $appendName=null) {
-        $this->form->addGroup($elements, $name, $label, $separator, $appendName);
+        $group = $this->form->addGroup($name)->setLabel($label)->setSeparator($separator);
+        foreach($elements as $el) {
+            $group->addElement($el);
+        }
     }
     function addPassword($field, $label=null, $attr=array('class' => 'form-control input-sm')){
         $this->form->addElement('password', $field, $label, $attr);
     }
 
     function createSelect($field, $label, $options=null, $attr=array('class' => 'form-control input-sm')) {
-	   return $this->form->createElement("select", $field, $label, $options, $attr);
+	   return HTML_QuickForm2_Factory::createElement("select", $field, $attr, array('label' => $label, 'options' => $options));
     }
 
     function createText($field, $label=null, $attr=array('class' => 'form-control input-sm')) {
@@ -134,7 +147,7 @@ class NDB_Page extends PEAR
     } 
 
     function createTextArea($field, $label=null) {
-       return $this->form->createElement("textarea", $field, $label, array('class' => 'form-control input-sm'));
+       return HTML_QuickForm2_Factory::createElement("textarea", $field, null, array('label' => $label, 'class' => 'form-control input-sm'));
     } 
     function createDate($field, $label, $dateOptions=null, $attr=array('class' => 'form-control input-sm', 'style' => 'max-width:33%; display:inline-block;')) {
         return $this->form->createElement("date", $field, $label, $dateOptions, $attr);
@@ -160,20 +173,17 @@ class NDB_Page extends PEAR
      */
     function display()
     {
-        if(!$this->form->isFrozen()) {
+
+        if(!$this->form->toggleFrozen()) {
             // hidden values
               $this->addHidden('test_name', $this->name);
               $this->addHidden('subtest', $this->page);
               $this->addHidden('identifier', $this->identifier);
-
-           // $this->form->addElement('hidden', 'test_name', $this->name);
-           // $this->form->addElement('hidden', 'subtest', $this->page);
-           // $this->form->addElement('hidden', 'identifier', $this->identifier);
          }
 
-        // get the defaults
         $localDefaults = $this->_getDefaults();
-        if (PEAR::isError($localDefaults)) {
+        // get the defaults
+        if (Utility::isErrorX($localDefaults)) {
             return PEAR::raiseError("NDB_Form::display(): ".$localDefaults->getMessage());
         }
         if(!is_array($localDefaults)) { $localDefaults = array(); }
@@ -181,21 +191,43 @@ class NDB_Page extends PEAR
         $this->_setDefaults(array_merge($this->defaults, $localDefaults));
 
             // trim all values
-        $this->form->applyFilter('__ALL__', 'trim');
+        $this->form->addRecursiveFilter('trim');
 
         // display the HTML_Quickform object
+        $renderer = HTML_QuickForm2_Renderer::factory('Stub');
+        $renderer->setOption(array(
+            'group_errors' => true,
+            'group_hiddens' => true
+        ));
+        $this->form->render($renderer);
+
         $smarty = new Smarty_neurodb($this->name);
-        $renderer = new HTML_QuickForm_Renderer_ArraySmarty($smarty);
-        $this->form->accept($renderer);
         $smarty->ModuleName = $this->name;
 
-        $smarty->assign('form', $renderer->toArray());
+        $FormData = array();
+        foreach($this->form as $element) {
+            $ID = $element->getId();
+            $FormData[$ID] = array(
+                'label' => $element->getLabel(),
+                'html' => $element->__toString(),
+                'error' => $element->getError()
+            );
+        }
+        $FormData['errors'] = $renderer->getErrors();
+
+        $hiddenStr = '';
+        foreach($renderer->getHidden() as $hiddenEl) {
+            $hiddenStr .= $hiddenEl;
+        }
+        $FormData['hidden'] = $hiddenStr;
+
+        //$FormData['errors'] = $renderer->getErrors();
+        //print_r($renderer->getErrors());
         $smarty->assign($this->tpl_data);
+        $smarty->assign('form', $FormData);
         $html = $smarty->fetch("form_$this->template.tpl");
         return $html;
-        //return $this->form->toHTML();
     }
-
 
     /**
      * Returns the form-specific defaults
@@ -207,17 +239,13 @@ class NDB_Page extends PEAR
     function _getDefaults()
     {
         return $this->defaults;
-    }
+    }    
 
-    /**
-     * Sets the form-specific defaults for this page
-     *
-     * @return array The defaults
-     */
-    function _setDefaults($defaults = array()) {
+    function _setDefaults($defaults= array()) {
         $this->defaults = $defaults;
-        $this->form->setDefaults($defaults);
-        return $defaults;
+        $this->form->addDataSource(
+            new HTML_QuickForm2_DataSource_Array($defaults)
+        );
     }
 }
 ?>

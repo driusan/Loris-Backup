@@ -13,10 +13,8 @@
 
 require_once 'Pager/Pager.php';
 require_once 'NDB_Menu.class.inc';
-require_once "HTML/QuickForm.php";
-require_once 'HTML/QuickForm/Renderer/ArraySmarty.php';
-require_once 'HTML/QuickForm/text.php';
-require_once 'HTML/QuickForm/select.php';
+require_once "HTML/QuickForm2.php";
+require_once 'HTML/QuickForm2/Renderer/Array.php';
 /**
  * Menu class, with filtering
  *
@@ -660,10 +658,21 @@ class NDB_Menu_Filter extends NDB_Menu
     {
         // dump the html for the menu
         $smarty = new Smarty_neurodb($this->Module);
-        $renderer = new HTML_QuickForm_Renderer_ArraySmarty($smarty);
-        $this->form->accept($renderer);
+        $renderer = HTML_QuickForm2_Renderer::factory('Array');
+
+        $this->form->render($renderer);
+        $FormData = array();
+        foreach($this->form as $element) {
+            $ID = $element->getId();
+            $FormData[$ID] = array(
+                'label' => $element->getLabel(),
+                'html' => $element->__toString(),
+            );
+        }
+
         $smarty->assign('mode', $this->mode);
-        $smarty->assign('form', $renderer->toArray());
+        $smarty->assign('form', $FormData);
+        //$smarty->assign('form', $renderer->toArray());
         $smarty->assign($this->tpl_data);
         $html = $smarty->fetch("menu_$this->menu.tpl");
         return $html;

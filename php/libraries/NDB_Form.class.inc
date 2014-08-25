@@ -11,6 +11,13 @@ require_once "HTML/QuickForm2.php";
 class NDB_Form extends NDB_Page
 {
     /**
+     * Page name
+     * @var    string
+     * @access private
+     */
+    var $page;
+ 
+    /**
      * Stores the template
      * @var    string 
      * @access private
@@ -139,7 +146,8 @@ class NDB_Form extends NDB_Page
     function save()
     {
         if ($this->form->validate()) {
-            $success = $this->form->process(array(&$this, "_save"), false);
+            $success = $this->_save($this->form->getValue());
+            //form->process(array(&$this, "_save"), false);
             if (Utility::isErrorX($success)) {
                 return PEAR::raiseError("NDB_Form::save(): ".$success->getMessage());
             }
@@ -197,7 +205,6 @@ class NDB_Form extends NDB_Page
     function _resetForm()
     {
        $this->_setupPage($name, $page, $identifier, null, 'test_form');
-       // $this->form = new HTML_QuickForm('test_form');
     }
 }
 ?>
