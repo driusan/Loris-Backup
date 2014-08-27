@@ -78,15 +78,14 @@ class NDB_Page extends PEAR
     /**
     * Wrapper to create a static score column
     */
-
     function addScoreColumn($name, $label) {
-        $this->form->addElement('static', $name, $label);
+        $this->form->addElement('static', $name, null, array('content' => $label, 'label' => $label))->setId($name);
     }
 
 
     function addBasicText($field, $label, $options=array()) {
         $options = array_merge(array('class' => 'form-control input-sm'), $options);
-        $this->form->addElement('text', $field, $options, array('label' => $label))->setId($field);
+        $this->form->addElement('text', $field, $options, array('label' => $label))->setId($field)->setLabel($label);
     }
 
     function addBasicTextArea($field, $label, $specifications=array('class' => 'form-control input-sm')) {
