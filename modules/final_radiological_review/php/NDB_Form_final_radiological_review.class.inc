@@ -124,7 +124,7 @@ class NDB_Form_final_radiological_review extends NDB_Form
         $this->addScoreColumn('Original_Incidental_Findings', 'Original Incidental Findings:', '');
         $this->addScoreColumn('Original_Examiner', 'Original Radiologist/Reviewer:', 'Unknown');
 
-        $this->form->addElement('static', 'history', '', '');
+        $this->addScoreColumn('history', '');
 
         if ($this->_has_perm('edit_final_radiological_review') == false) {
             $this->form->freeze();
