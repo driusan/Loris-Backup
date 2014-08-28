@@ -1,13 +1,9 @@
-<html>
-<head>
-	<title>BrainBrowser Volume Viewer</title>
+{literal}
        <link type="text/css" href="css/loris-jquery/jquery-ui-1.10.4.custom.min.css" rel="Stylesheet" />
        <link type="text/css" href="css/volume-viewer-demo.css" rel="Stylesheet" />
        <link type="text/css" href="css/common.css" rel="Stylesheet" />
        <link type="text/css" href="css/loris-brainbrowser.css" rel="Stylesheet" />
        <link type="text/css" href="css/layout.css" rel="Stylesheet" />
- </head>
-<body>
   <h1 id="app-name" class="app-label" style="display: block">Imaging Browser</h1>
   <script id="overlay-ui-template" type="x-volume-ui-template">
     <div class="overlay-viewer-display">
@@ -116,12 +112,10 @@
    <script type="text/javascript" src="js/jquery/jquery-ui-1.10.4.custom.min.js"></script>
    <script type="text/javascript" src="js/jquery/jquery.mousewheel.min.js"></script>
 
-   <script type="text/javascript" src="js/three.min.js"></script>
-   <script type="text/javascript" src="js/brainbrowser.volume-viewer.min.js"></script>
+   <script type="text/javascript" src="GetJS.php?Module=brainbrowser&file=three.min.js"></script>
+   <script type="text/javascript" src="GetJS.php?Module=brainbrowser&file=brainbrowser.volume-viewer.min.js"></script>
    <!--script type="text/javascript" src="js/brainbrowser.volume-viewer.ui-controls.min.js"></script-->
-   <script type="text/javascript" src="js/brainbrowser.config.js"></script>
+   <script type="text/javascript" src="GetJS.php?Module=brainbrowser&file=brainbrowser.config.js"></script>
 
-   <script type="text/javascript" src="js/brainbrowser.loris.js"></script> 
-
-</body>
-</html>
+   <script type="text/javascript" src="GetJS.php?Module=brainbrowser&file=brainbrowser.loris.js"></script> 
+{/literal}

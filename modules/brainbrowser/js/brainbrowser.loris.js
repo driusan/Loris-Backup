@@ -684,7 +684,7 @@ $(".time-div").each(function() {
         var filename;
         $.ajax({
             data: 'minc_id=' + minc_ids_arr[i],
-            url: 'getMincName.php',
+            url: 'AjaxHelper.php?Module=brainbrowser&script=getMincName.php',
             method: 'GET',
             async: false,
             success: function(data) {
@@ -700,8 +700,8 @@ $(".time-div").each(function() {
 
         minc_volumes.push({
             type: 'minc',
-            header_url: "minc.php?minc_id=" + minc_ids_arr[i] + "&minc_headers=true",
-            raw_data_url: "minc.php?minc_id=" + minc_ids_arr[i] + "&raw_data=true",
+            header_url: "AjaxHelper.php?Module=brainbrowser&script=minc.php&minc_id=" + minc_ids_arr[i] + "&minc_headers=true",
+            raw_data_url: "AjaxHelper.php?Module=brainbrowser&script=minc.php&minc_id=" + minc_ids_arr[i] + "&raw_data=true",
             template: {
                 element_id: "volume-ui-template4d",
                 viewer_insert_class: "volume-viewer-display"
