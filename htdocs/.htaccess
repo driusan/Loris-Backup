@@ -1,0 +1,10 @@
+RewriteEngine on
+#Note: [QSA] means that additional query string variables will
+#      be merged into the rewritten URL if they're specified, 
+
+# Rewrite modulename/js/filename.js to use GetJS wrapper.
+RewriteRule ^([a-zA-Z_]+)/js/([a-zA-Z_\.]+\.js) /GetJS.php?Module=$1&file=$2 [QSA]
+# Rewrite modulename/ajax/scriptname to use the AjaxHelper wrapper.
+RewriteRule ^([a-zA-Z_]+)/ajax/([a-zA-Z_\.]+) /AjaxHelper.php?Module=$1&script=$2 [QSA]
+# Rewrite modulename/css/file.css to get the module CSS.
+RewriteRule ^([a-zA-Z_]+)/css/([a-zA-Z_\.]+.css) /GetCSS.php?Module=$1
