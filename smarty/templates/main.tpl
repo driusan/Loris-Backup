@@ -77,6 +77,8 @@
                     $(".dropdown").hover(function(){
                         $(this).toggleClass('open');
                     });
+
+                    $(".dynamictable").DynamicTable();
                 });
 
                 
