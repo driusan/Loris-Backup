@@ -149,11 +149,11 @@ if (Utility::isErrorX($results)) {
 }
 
 foreach($results as &$result) {
+    $result['FamilyID'] = NULL;
     for ($i = 1; $i<=3; $i++) {
         $result['Sibling'.$i] = "";
         $result['Relationship_type_Sibling'.$i] = "";
     }
-    $result['FamilyID'] = NULL;
     $familyID     = $DB->pselectOne("SELECT FamilyID FROM family
                                      WHERE CandID=:cid",
                                      array('cid'=>$result['CandID']));
