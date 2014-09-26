@@ -77,8 +77,7 @@ $query = "select * from test_names order by Test_name";
 $DB->select($query, $instruments);
 if (PEAR::isError($instruments)) {
 	PEAR::raiseError("Couldn't get instruments. " . $instruments->getMessage());
-} 
-$instruments = array();
+}
 foreach ($instruments as $instrument) {
 	//Query to pull the data from the DB
 	$Test_name = $instrument['Test_name'];
@@ -93,7 +92,7 @@ foreach ($instruments as $instrument) {
             $instrument =& NDB_BVL_Instrument::factory($Test_name, '', false);
             if($instrument->ValidityEnabled == true) {
                 $extra_fields = 'f.Validity, ';
-            } 
+            }
             $NDB_Config = NDB_Config::singleton();
             $ddeInstruments = $NDB_Config->getSetting("DoubleDataEntryInstruments");
             print_r($ddeInstruments);
@@ -124,7 +123,6 @@ foreach ($instruments as $instrument) {
 * Special figs_year3_relatives query
 */
 //check if figs table exists
-/*
 $query = "SHOW TABLES LIKE 'figs_year3_relatives'";
 $DB->select($query,$result);
 if (count($result) > 0) {
@@ -138,7 +136,7 @@ if (count($result) > 0) {
 	MapSubprojectID($instrument_table);
 	writeExcel($Test_name, $instrument_table, $dataDir);
 }
-*/
+
 /*
 * Candidate Information query
 */
