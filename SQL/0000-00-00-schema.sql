@@ -1,21 +1,3 @@
-
--- MySQL dump 10.11
---
--- Host: localhost    Database: smart_dummy
--- ------------------------------------------------------
--- Server version	5.0.45-Debian_1ubuntu3.3-log
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
 --
 -- Table structure for table `candidate`
 --
@@ -223,15 +205,6 @@ CREATE TABLE `session` (
   CONSTRAINT `FK_session_1` FOREIGN KEY (`CandID`) REFERENCES `candidate` (`CandID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Table holding session information';
 
---
--- Dumping data for table `session`
---
-
-LOCK TABLES `session` WRITE;
-/*!40000 ALTER TABLE `session` DISABLE KEYS */;
-/*!40000 ALTER TABLE `session` ENABLE KEYS */;
-UNLOCK TABLES;
-
 CREATE TABLE `Visit_Windows` (
   `Visit_label` varchar(255) DEFAULT NULL,
   `WindowMinDays` int(11) DEFAULT NULL,
@@ -240,6 +213,7 @@ CREATE TABLE `Visit_Windows` (
   `OptimumMaxDays` int(11) DEFAULT NULL,
   `WindowMidpointDays` int(11) DEFAULT NULL
 );
+
 --
 -- Table structure for table `users`
 --
@@ -330,61 +304,6 @@ UNLOCK TABLES;
 
 -- Dump completed on 2008-04-16 21:15:00
 
-
-
-
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2012-08-21 16:13:53
-
-
-CREATE TABLE participant_status_options (
-        ID int(10) unsigned NOT NULL auto_increment,
-        Description varchar(255) default NULL,
-        Required boolean default NULL,
-        parentID int(10) default NULL,
-        PRIMARY KEY  (ID),
-        UNIQUE KEY ID (ID) 
-);
-INSERT INTO `participant_status_options` VALUES 
-	(1,'Active',0,NULL),
-	(2,'Refused/Not Enrolled',0,NULL),
-	(3,'Ineligible',0,NULL),
-	(4,'Excluded',0,NULL),
-	(5,'Inactive',1,NULL),
-	(6,'Incomplete',1,NULL),
-	(7,'Complete',0,NULL),
-	(8,'Unsure',NULL,5),
-	(9,'Requiring Further Investigation',NULL,5),
-	(10,'Not Responding',NULL,5),
-	(11,'Death',NULL,6),
-	(12,'Lost to Followup',NULL,6);
-
-CREATE TABLE participant_status (
-        ID int(10) unsigned NOT NULL auto_increment,
-        CandID int(6) UNIQUE NOT NULL default '0',
-        UserID varchar(255) default NULL,
-        Examiner varchar(255) default NULL,
-        entry_staff varchar(255) default NULL,
-        data_entry_date timestamp NOT NULL,
-        participant_status integer DEFAULT NULL REFERENCES participant_status_options(ID),
-        participant_suboptions integer DEFAULT NULL REFERENCES participant_status_options(ID),
-        reason_specify text default NULL,
-        reason_specify_status enum('dnk','not_applicable','refusal','not_answered') default NULL,
-        study_consent enum('yes','no','not_answered') default NULL,
-        study_consent_date date default NULL,
-        study_consent_withdrawal date default NULL,
-        PRIMARY KEY  (ID),
-        UNIQUE KEY ID (ID) 
-);
 
 
 DROP TABLE IF EXISTS `project_rel`;
