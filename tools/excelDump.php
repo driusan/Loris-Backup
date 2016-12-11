@@ -92,7 +92,7 @@ foreach ($instruments as $instrument) {
             $instrument =& NDB_BVL_Instrument::factory($Test_name, '', false);
             if($instrument->ValidityEnabled == true) {
                 $extra_fields = 'f.Validity, ';
-            } 
+            }
             $NDB_Config = NDB_Config::singleton();
             $ddeInstruments = $NDB_Config->getSetting("DoubleDataEntryInstruments");
             print_r($ddeInstruments);
@@ -123,7 +123,6 @@ foreach ($instruments as $instrument) {
 * Special figs_year3_relatives query
 */
 //check if figs table exists
-
 $query = "SHOW TABLES LIKE 'figs_year3_relatives'";
 $DB->select($query,$result);
 if (count($result) > 0) {
@@ -143,13 +142,14 @@ if (count($result) > 0) {
 */
 $Test_name = "candidate_info";
 //this query is a but clunky, but it gets rid of all the crap that would otherwise appear.
-$query = "SELECT DISTINCT c.PSCID, c.CandID, c.Gender, c.DoB, s.SubprojectID, c.ProjectID, pc.Value as Plan, c.EDC, pc1.Value as Comments from candidate c LEFT JOIN session s ON (c.CandID = s.CandID) LEFT JOIN parameter_candidate pc ON (c.CandID = pc.CandID AND pc.ParameterTypeID=73754) LEFT JOIN parameter_candidate pc1 ON (c.CandID = pc1.CandID AND pc1.ParameterTypeID=7296) LEFT JOIN participant_status ps ON (ps.CandID=c.CandID) WHERE c.CenterID IN (2,3,4,5) AND c.Active='Y'  AND s.Active='Y' AND (ps.study_consent='yes' AND ps.study_consent_withdrawal IS NULL) ORDER BY c.PSCID";
+$query = "SELECT DISTINCT c.PSCID, c.CandID, c.Gender, c.DoB, s.SubprojectID, c.ProjectID, pc.Value as Plan, c.EDC, pc1.Value as Comments, c.ProbandDoB, c.ProbandGender, ROUND(DATEDIFF(c.DoB, c.ProbandDoB)/12, 2) AS Age_Difference_Months from candidate c LEFT JOIN session s ON (c.CandID = s.CandID) LEFT JOIN parameter_candidate pc ON (c.CandID = pc.CandID AND pc.ParameterTypeID=73754) LEFT JOIN parameter_candidate pc1 ON (c.CandID = pc1.CandID AND pc1.ParameterTypeID=7296) LEFT JOIN participant_status ps ON (ps.CandID=c.CandID) WHERE c.CenterID IN (2,3,4,5) AND c.Active='Y'  AND s.Active='Y' AND (ps.study_consent='yes' AND ps.study_consent_withdrawal IS NULL) ORDER BY c.PSCID";
 $DB->select($query, $results);
 if (Utility::isErrorX($results)) {
     PEAR::raiseError("Couldn't get candidate info. " . $results->getMessage());
 }
 
 foreach($results as &$result) {
+    $result['FamilyID'] = NULL;
     for ($i = 1; $i<=3; $i++) {
         $result['Sibling'.$i] = "";
         $result['Relationship_type_Sibling'.$i] = "";
@@ -160,7 +160,8 @@ foreach($results as &$result) {
     if (Utility::isErrorX($familyID)) {
         PEAR::raiseError("Couldn't get candidate info. " . $familyID->getMessage());
     }
-    if (!empty($familyID)) { 
+    if (!empty($familyID)) {
+        $result['FamilyID'] = $familyID;
         $familyFields = $DB->pselect("SELECT candID as Sibling_ID,
                 Relationship_type as Relationship_to_sibling
                 FROM family
