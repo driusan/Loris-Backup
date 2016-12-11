@@ -645,8 +645,8 @@ class Utility extends PEAR
      */
     static function toArray($var)
     {
-        if (!isset($var[0])) {
-            $var = array($var);
+        if (!is_array($var)) {
+            return array($var);
         }
         return $var;
     }
@@ -664,6 +664,7 @@ class Utility extends PEAR
      */
     function asArray($var)
     {
+        trigger_error("Deprecated function called.", E_USER_NOTICE);
         if (!is_array($var)) {
             return array($var);
         }
